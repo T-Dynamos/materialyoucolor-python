@@ -14,7 +14,7 @@ Android performs the following steps to generate color schemes from a user's wal
 
 3. The system interprets each key color into a tonal palette of 13 tones.
 > ![img2](https://developer.android.com/static/develop/ui/views/theming/images/tonal-palettes.png)
-> *Figure 3. Example of generating a given tonal palettes*
+> *Figure 2. Example of generating a given tonal palettes*
 
 4. The system uses this single wallpaper to derive five different color schemes, which provides the basis for any light and dark themes.
 
