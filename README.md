@@ -20,9 +20,13 @@ Android performs the following steps to generate color schemes from a user's wal
 
 SEE MORE: https://developer.android.com/develop/ui/views/theming/dynamic-colors
 
+## Where to use this colors?
+
+SEE : https://m3.material.io/styles/color/the-color-system/color-roles
+
 ## TODO
 - [ ] Add disliked color algorithm
-- [ ] Add default basic colors
+- [x] Add default basic colors
 
 ## Example
 Install [kivy](https://kivy.org),[pillow](https://github.com/python-pillow/Pillow), [kivymd](https://github.com/kivymd/kivymd) and then run `example.py` file.
@@ -39,4 +43,5 @@ Install [kivy](https://kivy.org),[pillow](https://github.com/python-pillow/Pillo
 
 ## Credits
 https://github.com/fengsp/color-thief-py/blob/master/colorthief.py
+
 https://github.com/avanisubbiah/material-color-utilities
