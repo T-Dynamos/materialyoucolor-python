@@ -7,7 +7,7 @@ from kivy.metrics import dp
 import os
 
 from palettes.core_palette import CorePalette
-from utils.theme_utils import themeFromSourceColor
+from utils.theme_utils import themeFromSourceColor, getDefaultTheme
 from utils.color_utils import DominantColor
 from utils.string_utils import argbFromRgb, hexFromArgb
 
@@ -16,7 +16,7 @@ IMAGE_FILE = "/home/tdynamos/Downloads/test.png"  # file
 class Main(MDApp):
 
     def build(self):
-        self.theme_cls.theme_style = "Dark"
+        self.theme_cls.theme_style = "Light"
         return Builder.load_file("main.kv")
 
 
@@ -44,7 +44,7 @@ class Main(MDApp):
         for k in color["schemes"][self.theme_cls.theme_style.lower()].props.keys():
             label = MDLabel(text=k, halign="center", size_hint=(1, None), height=dp(60))
             widget = MDBoxLayout(size_hint=(1, None), height=dp(60))
-            widget.md_bg_color = color["schemes"][self.theme_cls.theme_style.lower()].props[k]
+            widget.md_bg_color = [k/255 for k in color["schemes"][self.theme_cls.theme_style.lower()].props[k]] + [1]
             widget.add_widget(label)
             self.root.ids.test.add_widget(widget)
 

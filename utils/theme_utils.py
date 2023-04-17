@@ -27,7 +27,9 @@ def customColor(source, color):
         },
     }
 
-
+def getDefaultTheme():
+    return Scheme.default()
+    
 def themeFromSourceColor(source, customColors=[]):
     palette = CorePalette.of(source)
     return {

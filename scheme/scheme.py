@@ -6,151 +6,130 @@ class Scheme:
     def __init__(self, props):
         self.props = props
 
-    def get_primary(self):
-        return self.props["primary"]
-
-    def get_primaryContainer(self):
-        return self.props["primaryContainer"]
-
-    def get_onPrimary(self):
-        return self.props["onPrimary"]
-
-    def get_onPrimaryContainer(self):
-        return self.props["onPrimaryContainer"]
-
-    def get_secondary(self):
-        return self.props["secondary"]
-
-    def get_secondaryContainer(self):
-        return self.props["secondaryContainer"]
-
-    def get_onSecondary(self):
-        return self.props["onSecondary"]
-
-    def get_onSecondaryContainer(self):
-        return self.props["onSecondaryContainer"]
-
-    def get_tertiary(self):
-        return self.props["tertiary"]
-
-    def get_onTertiary(self):
-        return self.props["onTertiary"]
-
-    def get_tertiaryContainer(self):
-        return self.props["tertiaryContainer"]
-
-    def get_onTertiaryContainer(self):
-        return self.props["onTertiaryContainer"]
-
-    def get_error(self):
-        return self.props["error"]
-
-    def get_onError(self):
-        return self.props["onError"]
-
-    def get_errorContainer(self):
-        return self.props["errorContainer"]
-
-    def get_onErrorContainer(self):
-        return self.props["onErrorContainer"]
-
-    def get_background(self):
-        return self.props["background"]
-
-    def get_onBackground(self):
-        return self.props["onBackground"]
-
-    def get_surface(self):
-        return self.props["surface"]
-
-    def get_onSurface(self):
-        return self.props["onSurface"]
-
-    def get_surfaceVariant(self):
-        return self.props["surfaceVariant"]
-
-    def get_onSurfaceVariant(self):
-        return self.props["onSurfaceVariant"]
-
-    def get_outline(self):
-        return self.props["outline"]
-
-    def get_shadow(self):
-        return self.props["shadow"]
-
-    def get_inverseSurface(self):
-        return self.props["inverseSurface"]
-
-    def get_inverseOnSurface(self):
-        return self.props["inverseOnSurface"]
-
-    def get_inversePrimary(self):
-        return self.props["inversePrimary"]
-
-    primary = property(get_primary)
-    primaryContainer = property(get_primaryContainer)
-    onPrimary = property(get_onPrimary)
-    onPrimaryContainer = property(get_onPrimaryContainer)
-    secondary = property(get_secondary)
-    secondaryContainer = property(get_secondaryContainer)
-    onSecondary = property(get_onSecondary)
-    onSecondaryContainer = property(get_onSecondaryContainer)
-    tertiary = property(get_tertiary)
-    onTertiary = property(get_onTertiary)
-    tertiaryContainer = property(get_tertiaryContainer)
-    onTertiaryContainer = property(get_onTertiaryContainer)
-    error = property(get_error)
-    onError = property(get_onError)
-    errorContainer = property(get_errorContainer)
-    onErrorContainer = property(get_onErrorContainer)
-    background = property(get_background)
-    onBackground = property(get_onBackground)
-    surface = property(get_surface)
-    onSurface = property(get_onSurface)
-    surfaceVariant = property(get_surfaceVariant)
-    onSurfaceVariant = property(get_onSurfaceVariant)
-    outline = property(get_outline)
-    shadow = property(get_shadow)
-    inverseSurface = property(get_inverseSurface)
-    inverseOnSurface = property(get_inverseOnSurface)
-    inversePrimary = property(get_inversePrimary)
-
-    # /**
-    #  * @param argb ARGB representation of a color.
-    #  * @return Light Material color scheme, based on the color's hue.
-    #  */
+    @staticmethod
+    def default():
+        return {
+        "Light":{
+            "primary": [103, 80, 164],
+            "primaryContainer": [234, 221, 255],
+            "onPrimary": [255, 255, 255],
+            "onPrimaryContainer": [33, 0, 94],
+            "inversePrimary": [208, 188, 255],
+            "secondary": [98, 91, 113],
+            "secondaryContainer": [232, 222, 248],
+            "onSecondary": [255, 255, 255],
+            "onSecondaryContainer": [30, 25, 43],
+            "tertiary": [125, 82, 96],
+            "tertiaryContainer": [255, 216, 228],
+            "onTertiary": [255, 255, 255],
+            "onTertiaryContainer": [55, 11, 30],
+            "surface": [254, 247, 255],
+            "surfaceDim": [222, 216, 225],
+            "surfaceBright": [254, 247, 255],
+            "surfaceContainerLowest": [255, 255, 255],
+            "surfaceContainerLow": [247, 242, 250],
+            "surfaceContainer": [243, 237, 247],
+            "surfaceContainerHigh": [236, 230, 240],
+            "surfaceContainerHighest": [230, 224, 233],
+            "surfaceVariant": [231, 224, 236],
+            "onSurface": [28, 27, 31],
+            "onSurfaceVariant": [73, 69, 78],
+            "inverseSurface": [49, 48, 51],
+            "inverseOnSurface": [244, 239, 244],
+            "background": [254, 247, 255],
+            "onBackground": [28, 27, 31],
+            "error": [179, 38, 30],
+            "errorContainer": [249, 222, 220],
+            "onError": [255, 255, 255],
+            "onErrorContainer": [65, 14, 11],
+            "outline": [121, 116, 126],
+            "outlineVariant": [196, 199, 197],
+            "shadow": [0, 0, 0],
+            "surfaceTint": [103, 80, 164],
+            "scrim": [0, 0, 0],
+        },
+        "Dark":{
+            "primary": [208, 188, 255],
+            "primaryContainer": [79, 55, 139],
+            "onPrimary": [55, 30, 115],
+            "onPrimaryContainer": [234, 221, 255],
+            "inversePrimary": [103, 80, 164],
+            "secondary": [204, 194, 220],
+            "secondaryContainer": [74, 68, 88],
+            "onSecondary": [51, 45, 65],
+            "onSecondaryContainer": [232, 222, 248],
+            "tertiary": [239, 184, 200],
+            "tertiaryContainer": [99, 59, 72],
+            "onTertiary": [73, 37, 50],
+            "onTertiaryContainer": [255, 216, 228],
+            "surface": [20, 18, 24],
+            "surfaceDim": [20, 18, 24],
+            "surfaceBright": [59, 56, 62],
+            "surfaceContainerLowest": [15, 13, 19],
+            "surfaceContainerLow": [29, 27, 32],
+            "surfaceContainer": [33, 31, 38],
+            "surfaceContainerHigh": [43, 41, 48],
+            "surfaceContainerHighest": [54, 52, 59],
+            "surfaceVariant": [73, 69, 79],
+            "onSurface": [230, 225, 229],
+            "onSurfaceVariant": [202, 196, 208],
+            "inverseSurface": [230, 225, 229],
+            "inverseOnSurface": [49, 48, 51],
+            "background": [20, 18, 24],
+            "onBackground": [230, 225, 229],
+            "error": [242, 184, 181],
+            "errorContainer": [140, 29, 24],
+            "onError": [96, 20, 16],
+            "onErrorContainer": [249, 222, 220],
+            "outline": [147, 143, 153],
+            "outlineVariant": [68, 71, 70],
+            "shadow": [0, 0, 0],
+            "surfaceTint": [208, 188, 255],
+            "scrim": [0, 0, 0],        
+        },
+        }
     @staticmethod
     def light(argb):
         core = CorePalette.of(argb)
         return Scheme(
             {
                 "primary": core.a1.tone(40),
-                "onPrimary": core.a1.tone(100),
                 "primaryContainer": core.a1.tone(90),
+                "onPrimary": core.a1.tone(100),
                 "onPrimaryContainer": core.a1.tone(10),
+                "inversePrimary": core.a1.tone(80),
                 "secondary": core.a2.tone(40),
-                "onSecondary": core.a2.tone(100),
                 "secondaryContainer": core.a2.tone(90),
+                "onSecondary": core.a2.tone(100),
                 "onSecondaryContainer": core.a2.tone(10),
                 "tertiary": core.a3.tone(40),
-                "onTertiary": core.a3.tone(100),
                 "tertiaryContainer": core.a3.tone(90),
+                "onTertiary": core.a3.tone(100),
                 "onTertiaryContainer": core.a3.tone(10),
-                "error": core.error.tone(40),
-                "onError": core.error.tone(100),
-                "errorContainer": core.error.tone(90),
-                "onErrorContainer": core.error.tone(10),
-                "background": core.n1.tone(99),
-                "onBackground": core.n1.tone(10),
-                "surface": core.n1.tone(99),
-                "onSurface": core.n1.tone(10),
+                "surface": core.n1.tone(98),
+                "surfaceDim": core.n1.tone(87),
+                "surfaceBright": core.n1.tone(98),
+                "surfaceContainerLowest": core.n1.tone(100),
+                "surfaceContainerLow": core.n1.tone(96),
+                "surfaceContainer": core.n1.tone(94),
+                "surfaceContainerHigh": core.n1.tone(92),
+                "surfaceContainerHighest": core.n1.tone(90),
                 "surfaceVariant": core.n2.tone(90),
+                "onSurface": core.n1.tone(10),
                 "onSurfaceVariant": core.n2.tone(30),
-                "outline": core.n2.tone(50),
-                "shadow": core.n1.tone(0),
                 "inverseSurface": core.n1.tone(20),
                 "inverseOnSurface": core.n1.tone(95),
-                "inversePrimary": core.a1.tone(80),
+                "background": core.n1.tone(98),
+                "onBackground": core.n1.tone(10),
+                "error": core.error.tone(40),
+                "errorContainer": core.error.tone(90),
+                "onError": core.error.tone(100),
+                "onErrorContainer": core.error.tone(10),
+                "outline": core.n2.tone(50),
+                "outlineVariant": core.n2.tone(80),
+                "shadow": core.n1.tone(0),
+                "surfaceTint": core.a1.tone(50), # This tone was not given
+                "scrim": core.n1.tone(0),
             }
         )
 
@@ -160,32 +139,42 @@ class Scheme:
         return Scheme(
             {
                 "primary": core.a1.tone(80),
-                "onPrimary": core.a1.tone(20),
                 "primaryContainer": core.a1.tone(30),
+                "onPrimary": core.a1.tone(20),
                 "onPrimaryContainer": core.a1.tone(90),
+                "inversePrimary": core.a1.tone(40),
                 "secondary": core.a2.tone(80),
-                "onSecondary": core.a2.tone(20),
                 "secondaryContainer": core.a2.tone(30),
+                "onSecondary": core.a2.tone(20),
                 "onSecondaryContainer": core.a2.tone(90),
                 "tertiary": core.a3.tone(80),
-                "onTertiary": core.a3.tone(20),
                 "tertiaryContainer": core.a3.tone(30),
+                "onTertiary": core.a3.tone(20),
                 "onTertiaryContainer": core.a3.tone(90),
-                "error": core.error.tone(80),
-                "onError": core.error.tone(20),
-                "errorContainer": core.error.tone(30),
-                "onErrorContainer": core.error.tone(80),
-                "background": core.n1.tone(10),
-                "onBackground": core.n1.tone(90),
-                "surface": core.n1.tone(10),
-                "onSurface": core.n1.tone(90),
+                "surface": core.n1.tone(6),
+                "surfaceDim": core.n1.tone(6),
+                "surfaceBright": core.n1.tone(24),
+                "surfaceContainerLowest": core.n1.tone(4),
+                "surfaceContainerLow": core.n1.tone(10),
+                "surfaceContainer": core.n1.tone(12),
+                "surfaceContainerHigh": core.n1.tone(17),
+                "surfaceContainerHighest": core.n1.tone(22),
                 "surfaceVariant": core.n2.tone(30),
+                "onSurface": core.n1.tone(90),
                 "onSurfaceVariant": core.n2.tone(80),
-                "outline": core.n2.tone(60),
-                "shadow": core.n1.tone(0),
                 "inverseSurface": core.n1.tone(90),
                 "inverseOnSurface": core.n1.tone(20),
-                "inversePrimary": core.a1.tone(40),
+                "background": core.n1.tone(6),
+                "onBackground": core.n1.tone(90),
+                "error": core.error.tone(80),
+                "errorContainer": core.error.tone(30),
+                "onError": core.error.tone(20),
+                "onErrorContainer": core.error.tone(90),
+                "outline": core.n2.tone(60),
+                "outlineVariant": core.n2.tone(30),
+                "shadow": core.n1.tone(0),
+                "surfaceTint": core.a1.tone(30), # This tone was not given
+                "scrim": core.n1.tone(0),
             }
         )
 
