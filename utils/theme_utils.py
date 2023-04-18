@@ -1,6 +1,20 @@
 from blend.blend import Blend
 from palettes.core_palette import CorePalette
 from scheme.scheme import Scheme
+from utils.color_utils import DominantColor
+import os
+
+def getDominantColors(image, quality = None, size = 10):
+    color_ = DominantColor(image)
+    colors = color_.get_palette(
+        color_count=size+1,
+        quality=(
+            round(
+                os.path.getsize(image)/10000 if quality is None else quality
+                )
+            )
+        )
+    return colors
 
 def customColor(source, color):
     value = color["value"]
@@ -48,7 +62,6 @@ def themeFromSourceColor(source, customColors=[]):
         },
         "customColors": [customColor(source, c) for c in customColors],
     }
-
 
 def themeFromImage(image, customColors=[]):
     source = sourceColorFromImage(image)

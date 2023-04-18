@@ -24,10 +24,6 @@ SEE MORE: https://developer.android.com/develop/ui/views/theming/dynamic-colors
 
 SEE : https://m3.material.io/styles/color/the-color-system/color-roles
 
-## TODO
-- [ ] Add disliked color algorithm
-- [x] Add default basic colors
-
 ## Example
 Install [kivy](https://kivy.org),[pillow](https://github.com/python-pillow/Pillow), [kivymd](https://github.com/kivymd/kivymd) and then run `example.py` file.
 

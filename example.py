@@ -7,8 +7,8 @@ from kivy.metrics import dp
 import os
 
 from palettes.core_palette import CorePalette
-from utils.theme_utils import themeFromSourceColor, getDefaultTheme
-from utils.color_utils import DominantColor
+from utils.theme_utils import themeFromSourceColor, getDefaultTheme, getDominantColors
+from utils.color_utils import materialize
 from utils.string_utils import argbFromRgb, hexFromArgb
 
 IMAGE_FILE = "/home/tdynamos/Downloads/test.png"  # file
@@ -16,18 +16,19 @@ IMAGE_FILE = "/home/tdynamos/Downloads/test.png"  # file
 class Main(MDApp):
 
     def build(self):
-        self.theme_cls.theme_style = "Light"
+        self.theme_cls.theme_style = "Dark"
         return Builder.load_file("main.kv")
 
-
     def on_start(self):
-        file_size = os.path.getsize(IMAGE_FILE)
-        color_thief = DominantColor(IMAGE_FILE)
-
+        # size : no of colors 
+        # quality : smaller the number, higher the quality and higher the time.
+        #          1 is the highest
+        r, g, b = getDominantColors(IMAGE_FILE, size = 10, quality = 100)[0]
         # Generate four most dominant
-        r, g, b = color_thief.get_color(quality=int(file_size / 10000))
-
         argb = argbFromRgb(r,g,b)
+
+        # materialize the color 
+        argb =  materialize(argb)
 
         color = themeFromSourceColor(argb)
 
