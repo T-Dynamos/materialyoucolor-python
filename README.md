@@ -37,6 +37,8 @@ Install [kivy](https://kivy.org),[pillow](https://github.com/python-pillow/Pillo
 |---------|---------|
 | ![Image 1](https://cdn.ytechb.com/wp-content/uploads/2021/09/Pixel-6-Pro-Plants-Wallpaper-7.webp) | ![Image 2](https://user-images.githubusercontent.com/68729523/232314900-58f281e4-3cf5-495e-a0dc-81ddc7f57e1f.png) |
 
+See all tokens : https://m3.material.io/styles/color/the-color-system/tokens
+
 ## Credits
 https://github.com/fengsp/color-thief-py/blob/master/colorthief.py
 
