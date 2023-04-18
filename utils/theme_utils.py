@@ -17,7 +17,7 @@ def temp(colors):
         r, g, b = color
         a = 255
         argb = (a << 24) + (r << 16) + (g << 8) + b
-        argb_count[argb] = argb_count.get(argb, 0) + 10
+        argb_count[argb] = argb_count.get(argb, 0) + 10 # No option to just fix it to ten
     return argb_count
 
 

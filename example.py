@@ -11,7 +11,7 @@ from utils.theme_utils import themeFromSourceColor, getDefaultTheme, getDominant
 from utils.color_utils import materialize
 from utils.string_utils import argbFromRgb, hexFromArgb
 
-IMAGE_FILE = "/home/tdynamos/Downloads/test.png"  # file
+IMAGE_FILE = "/home/tdynamos/Downloads/Pixel 6 Pro Wallpaper_Hellebores-light by Andrew Zuckerman.png"  # file
 
 
 class Main(MDApp):
@@ -21,8 +21,8 @@ class Main(MDApp):
 
     def on_start(self):
         # get material dominant colors
-        # (note this is in format of argb integers)
-        # its count is random (maybe even 1)
+        # more default_chunk = more colors
+        # less the quality number, higher the precision (max is 1) 
         argb = getDominantColors(IMAGE_FILE, quality=100, default_chunk = 20)
         print("Generated colors ",len(argb))
         argb = argb[0]
