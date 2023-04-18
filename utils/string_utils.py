@@ -15,11 +15,18 @@ def hexFromArgb(argb):
 def parseIntHex(value):
     return int(value, 16)
 
+
 def argbFromRgb(r, g, b, a=255) -> int:
     return (a << 24) | (r << 16) | (g << 8) | b
-    
-def rgbFromArgb(self,argb):
-    return ((argb >> 16 ) & 0xff) / 255 , ((argb >> 8) & 0xff) / 255 , (argb & 0xff) / 255, 1 
+
+
+def rgbFromArgb(self, argb):
+    return (
+        ((argb >> 16) & 0xFF) / 255,
+        ((argb >> 8) & 0xFF) / 255,
+        (argb & 0xFF) / 255,
+        1,
+    )
 
 
 def argbFromHex(hex):

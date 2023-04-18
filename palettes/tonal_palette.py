@@ -3,6 +3,7 @@ from collections import OrderedDict
 from utils.string_utils import hexFromArgb
 from utils.color_utils import redFromArgb, greenFromArgb, blueFromArgb
 
+
 class TonalPalette:
     def __init__(self, hue, chroma):
         self.hue = hue

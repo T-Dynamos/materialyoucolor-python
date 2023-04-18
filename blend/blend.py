@@ -1,9 +1,9 @@
 from hct.cam16 import Cam16
 from hct.hct import Hct
-from utils.math_utils import sanitizeDegreesDouble, differenceDegrees 
+from utils.math_utils import sanitizeDegreesDouble, differenceDegrees
+
 
 class Blend:
-
     @staticmethod
     def harmonize(designColor, sourceColor):
         fromHct = Hct.fromInt(designColor)

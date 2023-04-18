@@ -3,18 +3,33 @@ from palettes.core_palette import CorePalette
 from scheme.scheme import Scheme
 from utils.color_utils import DominantColor
 import os
+from score import score
 
-def getDominantColors(image, quality = None, size = 10):
+
+def tempConvert(rgb):
+    r, g, b = rgb
+    return 0xFF000000 | (r << 16) | (g << 8) | b
+
+
+def temp(colors):
+    argb_count = {}
+    for color in colors:
+        r, g, b = color
+        a = 255
+        argb = (a << 24) + (r << 16) + (g << 8) + b
+        argb_count[argb] = argb_count.get(argb, 0) + 10
+    return argb_count
+
+
+def getDominantColors(image, quality=None, default_chunk = 50):
     color_ = DominantColor(image)
     colors = color_.get_palette(
-        color_count=size+1,
-        quality=(
-            round(
-                os.path.getsize(image)/10000 if quality is None else quality
-                )
-            )
-        )
-    return colors
+        color_count=default_chunk,
+        quality=(round(os.path.getsize(image) / 10000 if quality is None else quality)),
+    )
+    score_final = score.Score(temp(colors))
+    return score_final
+
 
 def customColor(source, color):
     value = color["value"]
@@ -41,9 +56,11 @@ def customColor(source, color):
         },
     }
 
+
 def getDefaultTheme():
     return Scheme.default()
-    
+
+
 def themeFromSourceColor(source, customColors=[]):
     palette = CorePalette.of(source)
     return {
@@ -62,6 +79,7 @@ def themeFromSourceColor(source, customColors=[]):
         },
         "customColors": [customColor(source, c) for c in customColors],
     }
+
 
 def themeFromImage(image, customColors=[]):
     source = sourceColorFromImage(image)

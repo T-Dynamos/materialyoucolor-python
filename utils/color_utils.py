@@ -2,6 +2,7 @@ from hct import hct
 from utils.math_utils import matrixMultiply, clampInt
 import math
 from PIL import Image
+from collections import Counter
 import os
 
 SRGB_TO_XYZ = [
@@ -30,19 +31,21 @@ XYZ_TO_SRGB = [
 
 WHITE_POINT_D65 = [95.047, 100.0, 108.883]
 
+
 def materialize(color):
     hct_ = hct.Hct.fromInt(color)
-    huePasses = all([round(hct_.hue) >= 90.0 , round(hct_.hue) <= 111.0])
+    huePasses = all([round(hct_.hue) >= 90.0, round(hct_.hue) <= 111.0])
     chromaPasses = round(hct_.chroma) > 16.0
     tonePasses = round(hct_.tone) < 65.0
     if all([huePasses, chromaPasses, tonePasses]) == False:
         return hct.Hct.fromHct(
-          hct_.hue,
-          hct_.chroma,
-          70.0,
+            hct_.hue,
+            hct_.chroma,
+            70.0,
         ).toInt()
     else:
         return color
+
 
 def rshift(val, n):
     return val >> n if val >= 0 else (val + 0x100000000) >> n
@@ -51,8 +54,10 @@ def rshift(val, n):
 def argbFromRgb(red, green, blue):
     return rshift((255 << 24 | (red & 255) << 16 | (green & 255) << 8 | blue & 255), 0)
 
+
 def rgbFromargb(r, g, b, a=255) -> int:
-        return (a << 24) | (r << 16) | (g << 8) | b
+    return (a << 24) | (r << 16) | (g << 8) | b
+
 
 def alphaFromArgb(argb):
     return argb >> 24 & 255
@@ -211,7 +216,6 @@ class cached_property(object):
 
 
 class DominantColor(object):
-
     def __init__(self, file):
         self.image = Image.open(file)
 
@@ -231,6 +235,7 @@ class DominantColor(object):
                 if not (r > 250 and g > 250 and b > 250):
                     valid_pixels.append((r, g, b))
         cmap = MMCQ.quantize(valid_pixels, color_count)
+
         return cmap.palette
 
 
@@ -373,7 +378,7 @@ class MMCQ(object):
                 if not vbox1:
                     raise Exception("vbox1 not defined; shouldn't happen!")
                 lh.push(vbox1)
-                if vbox2:  
+                if vbox2:
                     lh.push(vbox2)
                     n_color += 1
                 if n_color >= target:
@@ -467,7 +472,6 @@ class VBox(object):
 
 
 class CMap(object):
-
     def __init__(self):
         self.vboxes = PQueue(lambda x: x["vbox"].count * x["vbox"].volume)
 
@@ -510,7 +514,6 @@ class CMap(object):
 
 
 class PQueue(object):
-
     def __init__(self, sort_key):
         self.sort_key = sort_key
         self.contents = []
