@@ -1,4 +1,3 @@
-from hct import hct
 from utils.math_utils import matrixMultiply, clampInt
 import math
 from PIL import Image
@@ -30,22 +29,6 @@ XYZ_TO_SRGB = [
 ]
 
 WHITE_POINT_D65 = [95.047, 100.0, 108.883]
-
-
-def materialize(color):
-    hct_ = hct.Hct.fromInt(color)
-    huePasses = all([round(hct_.hue) >= 90.0, round(hct_.hue) <= 111.0])
-    chromaPasses = round(hct_.chroma) > 16.0
-    tonePasses = round(hct_.tone) < 65.0
-    if all([huePasses, chromaPasses, tonePasses]) == False:
-        return hct.Hct.fromHct(
-            hct_.hue,
-            hct_.chroma,
-            70.0,
-        ).toInt()
-    else:
-        return color
-
 
 def rshift(val, n):
     return val >> n if val >= 0 else (val + 0x100000000) >> n

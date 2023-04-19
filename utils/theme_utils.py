@@ -4,12 +4,26 @@ from scheme.scheme import Scheme
 from utils.color_utils import DominantColor
 import os
 from score import score
-
+from hct import hct 
 
 def tempConvert(rgb):
     r, g, b = rgb
     return 0xFF000000 | (r << 16) | (g << 8) | b
 
+# dislike algorithm
+def materialize(color):
+    hct_ = hct.Hct.fromInt(color)
+    huePasses = all([round(hct_.hue) >= 90.0, round(hct_.hue) <= 111.0])
+    chromaPasses = round(hct_.chroma) > 16.0
+    tonePasses = round(hct_.tone) < 65.0
+    if all([huePasses, chromaPasses, tonePasses]) == False:
+        return hct.Hct.fromHct(
+            hct_.hue,
+            hct_.chroma,
+            70.0,
+        ).toInt()
+    else:
+        return color
 
 def temp(colors):
     argb_count = {}
@@ -17,18 +31,20 @@ def temp(colors):
         r, g, b = color
         a = 255
         argb = (a << 24) + (r << 16) + (g << 8) + b
-        argb_count[argb] = argb_count.get(argb, 0) + 10 # No option to just fix it to ten
+        # No option to just fix it to ten and make proportions equal
+        # then this will prioritize chroma when proportions are equal
+        argb_count[argb] = argb_count.get(argb, 0) + 10 
     return argb_count
 
 
-def getDominantColors(image, quality=None, default_chunk = 50):
+def getDominantColors(image, quality=None, default_chunk = 128):
     color_ = DominantColor(image)
     colors = color_.get_palette(
         color_count=default_chunk,
         quality=(round(os.path.getsize(image) / 10000 if quality is None else quality)),
     )
     score_final = score.Score(temp(colors))
-    return score_final
+    return [materialize(co) for co in score_final]
 
 
 def customColor(source, color):
