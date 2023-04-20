@@ -24,6 +24,10 @@ SEE MORE: https://developer.android.com/develop/ui/views/theming/dynamic-colors
 
 SEE : https://m3.material.io/styles/color/the-color-system/color-roles
 
+## Documentation
+
+Please see `example.py`, its well documented by AI.
+
 ## Example
 Install [kivy](https://kivy.org),[pillow](https://github.com/python-pillow/Pillow), [kivymd](https://github.com/kivymd/kivymd) and then run `example.py` file.
 
