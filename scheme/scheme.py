@@ -9,7 +9,7 @@ class Scheme:
     @staticmethod
     def default():
         return {
-            "Light": {
+            "light": {
                 "primary": [103, 80, 164],
                 "primaryContainer": [234, 221, 255],
                 "onPrimary": [255, 255, 255],
@@ -48,7 +48,7 @@ class Scheme:
                 "surfaceTint": [103, 80, 164],
                 "scrim": [0, 0, 0],
             },
-            "Dark": {
+            "dark": {
                 "primary": [208, 188, 255],
                 "primaryContainer": [79, 55, 139],
                 "onPrimary": [55, 30, 115],

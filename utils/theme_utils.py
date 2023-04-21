@@ -47,17 +47,16 @@ def getDominantColors(image, quality=None, default_chunk = 128):
     return [materialize(co) for co in score_final]
 
 
-def customColor(source, color):
-    value = color["value"]
-    from_v = value
-    to = source
-    if color["blend"]:
-        value = Blend.harmonize(from_v, to)
+def customColor(custom_color, source_color=None, blend=False):
+    value = materialize(custom_color)
+    if blend:
+        value = Blend.harmonize(value, source_color)
     palette = CorePalette.of(value)
     tones = palette.a1
     return {
-        "color": color,
-        "value": value,
+        "color": custom_color,
+        "theme_color": source_color,
+        "blended": blend,
         "light": {
             "color": tones.tone(40),
             "onColor": tones.tone(100),
@@ -93,7 +92,7 @@ def themeFromSourceColor(source, customColors=[]):
             "neutralVariant": palette.n2,
             "error": palette.error,
         },
-        "customColors": [customColor(source, c) for c in customColors],
+        "customColors": [customColor(c, blend=True, source_color=source) for c in customColors],
     }
 
 

@@ -7,13 +7,13 @@ from kivymd.app import MDApp
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.label import MDLabel
 
-from utils.theme_utils import themeFromSourceColor, getDefaultTheme, getDominantColors
+from utils.theme_utils import themeFromSourceColor, getDefaultTheme, getDominantColors, customColor 
 from utils.string_utils import argbFromRgb, hexFromArgb
 
 # Define constants
-IMAGE_FILE = "/home/tdynamos/Downloads/Pixel 6 Pro_default_wallpaper_BLK.png"  # file
+IMAGE_FILE = "/home/tdynamos/Downloads/Pixel 6 Pro Wallpaper_Hellebores-light by Andrew Zuckerman.png"  # file
 THEME = "Dark"  # theme to display
-COLOR_INDEX = 1  # index to build theme from
+COLOR_INDEX = 0  # index to build theme from
 
 # Define Kivy Language code string for user interface
 KV = """
@@ -58,13 +58,26 @@ class Main(MDApp):
 
         print("Number of Generated colors ", len(argbs))
 
-        print("Default theme : ", getDefaultTheme())
+        print("Default theme : ", getDefaultTheme()[THEME.lower()])
 
         # Choose a color to generate the theme from
         argb = argbs[COLOR_INDEX]  # choose index
 
+        # add some custom colors
+        # this may be needed if you have thumnail or something else like that
+        # (this color will be materialized So don't worry!)
+        custom_colors = [argbFromRgb(255,0,0)]
+
         # here argb is color int eg: 4285368085
-        color = themeFromSourceColor(argb)  # generate the theme from the chosen color
+        # generate the theme from the chosen colors
+        # here custom colors will be blended from theme!
+        color = themeFromSourceColor(argb, customColors=custom_colors)    
+
+        # print custom colors!
+        print("Custom color blended from theme : ", color["customColors"])
+
+        # you can also constuct it without blending from theme color 
+        print("Custom color without blending : ", customColor(custom_colors[0]))
 
         # Add the number of colors generated to the interface
         self.root.ids.ofcolor.text += str(len(argbs))
@@ -101,7 +114,6 @@ class Main(MDApp):
             # Also we can convert argb to hex
             widget.md_bg_color = hexFromArgb(col)
             self.root.ids.bg_.add_widget(widget)
-
 
 # run the application
 Main().run()
