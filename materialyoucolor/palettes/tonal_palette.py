@@ -1,7 +1,7 @@
-from hct.hct import Hct
+from materialyoucolor.hct.hct import Hct
 from collections import OrderedDict
-from utils.string_utils import hexFromArgb
-from utils.color_utils import redFromArgb, greenFromArgb, blueFromArgb
+from materialyoucolor.utils.string_utils import hexFromArgb
+from materialyoucolor.utils.color_utils import redFromArgb, greenFromArgb, blueFromArgb
 
 
 class TonalPalette:

@@ -1,5 +1,5 @@
-from utils.color_utils import whitePointD65, yFromLstar
-from utils.math_utils import clampInt, lerp
+from materialyoucolor.utils.color_utils import whitePointD65, yFromLstar
+from materialyoucolor.utils.math_utils import clampInt, lerp
 import math
 
 

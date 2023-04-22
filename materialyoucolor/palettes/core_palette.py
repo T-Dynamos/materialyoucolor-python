@@ -1,5 +1,5 @@
-from hct.hct import Hct
-from palettes.tonal_palette import TonalPalette
+from materialyoucolor.hct.hct import Hct
+from materialyoucolor.palettes.tonal_palette import TonalPalette
 
 
 class CorePalette:

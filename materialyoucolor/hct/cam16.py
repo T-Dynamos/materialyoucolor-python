@@ -1,4 +1,4 @@
-from utils.color_utils import (
+from materialyoucolor.utils.color_utils import (
     redFromArgb,
     greenFromArgb,
     blueFromArgb,
@@ -6,8 +6,8 @@ from utils.color_utils import (
     linearized,
     argbFromXyz,
 )
-from utils.math_utils import signum, sanitizeDegreesDouble, clampDouble
-from hct.viewing_conditions import ViewingConditions
+from materialyoucolor.utils.math_utils import signum, sanitizeDegreesDouble, clampDouble
+from materialyoucolor.hct.viewing_conditions import ViewingConditions
 import math
 
 

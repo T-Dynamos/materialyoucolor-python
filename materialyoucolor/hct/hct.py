@@ -1,7 +1,7 @@
-from utils.color_utils import argbFromLstar, lstarFromArgb
-from utils.math_utils import sanitizeDegreesDouble, clampDouble
-from hct.cam16 import Cam16
-from hct.viewing_conditions import ViewingConditions
+from materialyoucolor.utils.color_utils import argbFromLstar, lstarFromArgb
+from materialyoucolor.utils.math_utils import sanitizeDegreesDouble, clampDouble
+from materialyoucolor.hct.cam16 import Cam16
+from materialyoucolor.hct.viewing_conditions import ViewingConditions
 
 CHROMA_SEARCH_ENDPOINT = 0.4
 DE_MAX = 1.0

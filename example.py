@@ -7,8 +7,8 @@ from kivymd.app import MDApp
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.label import MDLabel
 
-from utils.theme_utils import themeFromSourceColor, getDefaultTheme, getDominantColors, customColor 
-from utils.string_utils import argbFromRgb, hexFromArgb
+from materialyoucolor.utils.theme_utils import themeFromSourceColor, getDefaultTheme, getDominantColors, customColor 
+from materialyoucolor.utils.string_utils import argbFromRgb, hexFromArgb
 
 # Define constants
 IMAGE_FILE = "/home/tdynamos/Downloads/Pixel 6 Pro Wallpaper_Hellebores-light by Andrew Zuckerman.png"  # file

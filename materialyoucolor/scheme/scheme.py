@@ -1,4 +1,4 @@
-from palettes.core_palette import CorePalette
+from materialyoucolor.palettes.core_palette import CorePalette
 import json
 
 

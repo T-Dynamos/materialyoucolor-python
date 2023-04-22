@@ -1,6 +1,6 @@
-from hct.cam16 import Cam16
-from utils.color_utils import lstarFromArgb
-from utils.math_utils import sanitizeDegreesInt, differenceDegrees
+from materialyoucolor.hct.cam16 import Cam16
+from materialyoucolor.utils.color_utils import lstarFromArgb
+from materialyoucolor.utils.math_utils import sanitizeDegreesInt, differenceDegrees
 from typing import List, Tuple, Dict
 from collections import defaultdict
 import math

@@ -1,10 +1,10 @@
-from blend.blend import Blend
-from palettes.core_palette import CorePalette
-from scheme.scheme import Scheme
-from utils.color_utils import DominantColor
+from materialyoucolor.blend.blend import Blend
+from materialyoucolor.palettes.core_palette import CorePalette
+from materialyoucolor.scheme.scheme import Scheme
+from materialyoucolor.utils.color_utils import DominantColor
 import os
-from score import score
-from hct import hct 
+from materialyoucolor.score import score
+from materialyoucolor.hct import hct 
 
 def tempConvert(rgb):
     r, g, b = rgb

@@ -1,4 +1,4 @@
-from utils.math_utils import matrixMultiply, clampInt
+from materialyoucolor.utils.math_utils import matrixMultiply, clampInt
 import math
 from PIL import Image
 from collections import Counter

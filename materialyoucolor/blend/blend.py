@@ -1,6 +1,6 @@
-from hct.cam16 import Cam16
-from hct.hct import Hct
-from utils.math_utils import sanitizeDegreesDouble, differenceDegrees
+from materialyoucolor.hct.cam16 import Cam16
+from materialyoucolor.hct.hct import Hct
+from materialyoucolor.utils.math_utils import sanitizeDegreesDouble, differenceDegrees
 
 
 class Blend:
