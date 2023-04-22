@@ -24,6 +24,20 @@ SEE MORE: https://developer.android.com/develop/ui/views/theming/dynamic-colors
 
 SEE : https://m3.material.io/styles/color/the-color-system/color-roles
 
+## Install 
+
+Always prefer master branch
+
+```console
+pip3 install https://github.com/T-Dynamos/materialyoucolor-pyhton/archive/main.zip
+
+```
+or 
+
+```console
+pip3 install materialyoucolor
+```
+
 ## Documentation
 
 Please see `example.py`, its well documented by AI.
