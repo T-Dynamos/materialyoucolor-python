@@ -11,7 +11,7 @@ from materialyoucolor.utils.theme_utils import themeFromSourceColor, getDefaultT
 from materialyoucolor.utils.string_utils import argbFromRgb, hexFromArgb
 
 # Define constants
-IMAGE_FILE = "/home/tdynamos/Downloads/Pixel 6 Pro Wallpaper_Hellebores-light by Andrew Zuckerman.png"  # file
+IMAGE_FILE = "/sdcard/Download/Pixel-6-Pro-Wallpaper_Hellebores-dark-by-Andrew-Zuckerman.png"  # file
 THEME = "Dark"  # theme to display
 COLOR_INDEX = 0  # index to build theme from
 
