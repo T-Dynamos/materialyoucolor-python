@@ -95,7 +95,3 @@ def themeFromSourceColor(source, customColors=[]):
         "customColors": [customColor(c, blend=True, source_color=source) for c in customColors],
     }
 
-
-def themeFromImage(image, customColors=[]):
-    source = sourceColorFromImage(image)
-    return themeFromSourceColor(source, customColors)

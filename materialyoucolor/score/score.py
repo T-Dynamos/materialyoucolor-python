@@ -1,9 +1,8 @@
 from materialyoucolor.hct.cam16 import Cam16
 from materialyoucolor.utils.color_utils import lstarFromArgb
 from materialyoucolor.utils.math_utils import sanitizeDegreesInt, differenceDegrees
-from typing import List, Tuple, Dict
+from typing import List, Dict
 from collections import defaultdict
-import math
 
 TARGET_CHROMA = 48.0
 WEIGHT_PROPORTION = 0.7
@@ -40,7 +39,7 @@ def Score(
     population_sum = sum(colors_to_population.values())
     colors_to_proportion = {}
     colors_to_cam = {}
-    hue_proportions = defaultdict(int)
+    hue_proportions = defaultdict(float)
 
     for color, population in colors_to_population.items():
         proportion = population / population_sum

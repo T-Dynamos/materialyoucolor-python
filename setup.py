@@ -7,6 +7,7 @@ assert sys.version_info >= (3, 7, 0), "Materialyoucolor requires Python 3.7+"
 with open("README.md", "r") as f:
     long_description = f.read()
     f.close()
+
 with open("materialyoucolor/__init__.py","r") as file:
     VERSION = file.read().split("=")[-1].strip()
     file.close()

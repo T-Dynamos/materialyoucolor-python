@@ -1,4 +1,4 @@
-from materialyoucolor.utils.color_utils import redFromArgb, greenFromArgb, blueFromArgb
+from materialyoucolor.utils.color_utils import redFromArgb, greenFromArgb, blueFromArgb, rshift
 
 def hexFromArgb(argb):
     r = redFromArgb(argb)
@@ -44,7 +44,7 @@ def argbFromRgb(r, g, b, a=255) -> int:
     return (a << 24) | (r << 16) | (g << 8) | b
 
 
-def rgbFromArgb(self, argb):
+def rgbFromArgb(argb):
     return (
         ((argb >> 16) & 0xFF) / 255,
         ((argb >> 8) & 0xFF) / 255,

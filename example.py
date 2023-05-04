@@ -36,6 +36,8 @@ ScrollView:
 
 class Main(MDApp):
 
+    root = Builder.load_file
+
     # Build the user interface
     def build(self):
         self.theme_cls.theme_style = THEME  # set theme style

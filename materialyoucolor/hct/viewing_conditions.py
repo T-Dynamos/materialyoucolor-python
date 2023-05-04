@@ -1,9 +1,12 @@
 from materialyoucolor.utils.color_utils import whitePointD65, yFromLstar
-from materialyoucolor.utils.math_utils import clampInt, lerp
+from materialyoucolor.utils.math_utils import lerp
 import math
 
 
 class ViewingConditions:
+    
+    DEFAULT = None
+
     def __init__(self, n, aw, nbb, ncb, c, nc, rgbD, fl, fLRoot, z):
         self.n = n
         self.aw = aw
@@ -15,7 +18,7 @@ class ViewingConditions:
         self.fl = fl
         self.fLRoot = fLRoot
         self.z = z
-
+    
     @staticmethod
     def make(
         whitePoint=whitePointD65(),
@@ -68,6 +71,5 @@ class ViewingConditions:
         ]
         aw = (2.0 * rgbA[0] + rgbA[1] + 0.05 * rgbA[2]) * nbb
         return ViewingConditions(n, aw, nbb, ncb, c, nc, rgbD, fl, pow(fl, 0.25), z)
-
 
 ViewingConditions.DEFAULT = ViewingConditions.make()
