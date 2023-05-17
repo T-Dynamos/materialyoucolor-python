@@ -9,9 +9,9 @@ with open("README.md", "r") as f:
     f.close()
 
 with open("materialyoucolor/__init__.py","r") as file:
-    VERSION = file.read().split("=")[-1].strip()
+    VERSION = file.read().split("= ")[-1].split('"')[1].split('"')[0]
     file.close()
-    
+print(VERSION)
 setup(
     name="materialyoucolor",
     version=VERSION,
