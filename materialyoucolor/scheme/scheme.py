@@ -129,7 +129,7 @@ class Scheme:
                 "outline": core.n2.tone(50),
                 "outlineVariant": core.n2.tone(80),
                 "shadow": core.n1.tone(0),
-                "surfaceTint": core.a1.tone(50),  # This tone was not given
+                "surfaceTint": core.a1.tone(40),
                 "scrim": core.n1.tone(0),
             }
         )
@@ -174,7 +174,7 @@ class Scheme:
                 "outline": core.n2.tone(60),
                 "outlineVariant": core.n2.tone(30),
                 "shadow": core.n1.tone(0),
-                "surfaceTint": core.a1.tone(30),  # This tone was not given
+                "surfaceTint": core.a1.tone(80),
                 "scrim": core.n1.tone(0),
             }
         )
