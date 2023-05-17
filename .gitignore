@@ -1,0 +1,8 @@
+build
+patch
+dist 
+*.egg* 
+*.cc
+*.h
+__pycache__
+*.pyc

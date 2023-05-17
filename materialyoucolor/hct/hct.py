@@ -1,133 +1,80 @@
-from materialyoucolor.utils.color_utils import argbFromLstar, lstarFromArgb
-from materialyoucolor.utils.math_utils import sanitizeDegreesDouble, clampDouble
-from materialyoucolor.hct.cam16 import Cam16
+from materialyoucolor.utils.color_utils import lstar_from_argb, lstar_from_y
 from materialyoucolor.hct.viewing_conditions import ViewingConditions
-
-CHROMA_SEARCH_ENDPOINT = 0.4
-DE_MAX = 1.0
-DL_MAX = 0.2
-LIGHTNESS_SEARCH_ENDPOINT = 0.01
-
-
-def findCamByJ(hue, chroma, tone):
-    low = 0.0
-    high = 100.0
-    mid = 0.0
-    bestdL = 1000.0
-    bestdE = 1000.0
-    bestCam = None
-    while abs(low - high) > LIGHTNESS_SEARCH_ENDPOINT:
-        mid = low + (high - low) / 2
-        camBeforeClip = Cam16.fromJch(mid, chroma, hue)
-        clipped = camBeforeClip.toInt()
-        clippedLstar = lstarFromArgb(clipped)
-        dL = abs(tone - clippedLstar)
-        if dL < DL_MAX:
-            camClipped = Cam16.fromInt(clipped)
-            dE = camClipped.distance(
-                Cam16.fromJch(camClipped.j, camClipped.chroma, hue)
-            )
-            if dE <= DE_MAX and dE <= bestdE:
-                bestdL = dL
-                bestdE = dE
-                bestCam = camClipped
-        if bestdL == 0 and bestdE == 0:
-            break
-        if clippedLstar < tone:
-            low = mid
-        else:
-            high = mid
-    return bestCam
-
-
-def getIntInViewingConditions(hue, chroma, tone, viewingConditions):
-    if chroma < 1.0 or round(tone) <= 0.0 or round(tone) >= 100.0:
-        return argbFromLstar(tone)
-
-    hue = sanitizeDegreesDouble(hue)
-    high = chroma
-    mid = chroma
-    low = 0.0
-    isFirstLoop = True
-    answer = None
-    while abs(low - high) >= CHROMA_SEARCH_ENDPOINT:
-        possibleAnswer = findCamByJ(hue, mid, tone)
-        if isFirstLoop:
-            if possibleAnswer != None:
-                return possibleAnswer.viewed(viewingConditions)
-            else:
-                isFirstLoop = False
-                mid = low + (high - low) / 2.0
-                continue
-        if possibleAnswer == None:
-            high = mid
-        else:
-            answer = possibleAnswer
-            low = mid
-        mid = low + (high - low) / 2.0
-    if answer == None:
-        return argbFromLstar(tone)
-    return answer.viewed(viewingConditions)
-
-
-def getInt(hue, chroma, tone):
-    return getIntInViewingConditions(
-        sanitizeDegreesDouble(hue),
-        chroma,
-        clampDouble(0.0, 100.0, tone),
-        ViewingConditions.DEFAULT,
-    )
+from materialyoucolor.hct.cam16 import Cam16
+from materialyoucolor.hct.hct_solver import HctSolver
 
 
 class Hct:
-    def __init__(self, internalHue, internalChroma, internalTone):
-        self.internalHue = internalHue
-        self.internalChroma = internalChroma
-        self.internalTone = internalTone
-        self.setInternalState(self.toInt())
+    def __init__(self, argb: int):
+        cam = Cam16.from_int(argb)
+        self.internal_hue = cam.hue
+        self.internal_chroma = cam.chroma
+        self.internal_tone = lstar_from_argb(argb)
+        self.argb = argb
+
+    def set_internal_state(self, argb: int):
+        cam = Cam16.from_int(argb)
+        self.internal_hue = cam.hue
+        self.internal_chroma = cam.chroma
+        self.internal_tone = lstar_from_argb(argb)
+        self.argb = argb
 
     @staticmethod
-    def fromHct(hue, chroma, tone):
-        return Hct(hue, chroma, tone)
+    def from_hct(hue: float, chroma: float, tone: float):
+        return Hct(int(HctSolver.solve_to_int(hue, chroma, tone)))
 
     @staticmethod
-    def fromInt(argb):
-        cam = Cam16.fromInt(argb)
-        tone = lstarFromArgb(argb)
-        return Hct(cam.hue, cam.chroma, tone)
+    def from_int(argb: int):
+        return Hct(argb)
 
-    def toInt(self):
-        return getInt(self.internalHue, self.internalChroma, self.internalTone)
+    def to_int(self) -> int:
+        return self.argb
 
-    def get_hue(self):
-        return self.internalHue
+    @property
+    def hue(self) -> float:
+        return self.internal_hue
 
-    def set_hue(self, newHue):
-        self.setInternalState(
-            getInt(
-                sanitizeDegreesDouble(newHue), self.internalChroma, self.internalTone
+    @hue.setter
+    def hue(self, new_hue: float):
+        self.set_internal_state(
+            int(
+                HctSolver.solve_to_int(
+                    new_hue, self.internal_chroma, self.internal_tone
+                )
             )
         )
 
-    def get_chroma(self):
-        return self.internalChroma
+    @property
+    def chroma(self) -> float:
+        return self.internal_chroma
 
-    def set_chroma(self, newChroma):
-        self.setInternalState(getInt(self.internalHue, newChroma, self.internalTone))
+    @chroma.setter
+    def chroma(self, new_chroma: float):
+        self.set_internal_state(
+            HctSolver.solve_to_int(self.internal_hue, new_chroma, self.internal_tone)
+        )
 
-    def get_tone(self):
-        return self.internalTone
+    @property
+    def tone(self) -> float:
+        return self.internal_tone
 
-    def set_tone(self, newTone):
-        self.setInternalState(getInt(self.internalHue, self.internalChroma, newTone))
+    @tone.setter
+    def tone(self, new_tone: float):
+        self.set_internal_state(
+            int(
+                HctSolver.solve_to_int(
+                    self.internal_hue, self.internal_chroma, new_tone
+                )
+            )
+        )
 
-    def setInternalState(self, argb):
-        cam = Cam16.fromInt(argb)
-        tone = lstarFromArgb(argb)
-        self.internalHue = cam.hue
-        self.internalChroma = cam.chroma
-        self.internalTone = tone
-
-    hue = property(get_hue, set_hue)
-    chroma = property(get_chroma, set_chroma)
-    tone = property(get_tone, set_tone)
+    def in_viewing_conditions(self, vc: ViewingConditions):
+        cam = Cam16.from_int(self.to_int())
+        viewed_in_vc = cam.xyz_in_viewing_conditions(vc)
+        recast_in_vc = Cam16.from_xyz_in_viewing_conditions(
+            viewed_in_vc[0], viewed_in_vc[1], viewed_in_vc[2], ViewingConditions.make()
+        )
+        recast_hct = Hct.from_hct(
+            recast_in_vc.hue, recast_in_vc.chroma, lstar_from_y(viewed_in_vc[1])
+        )
+        return recast_hct

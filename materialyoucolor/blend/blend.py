@@ -1,56 +1,45 @@
+from materialyoucolor.hct import Hct
 from materialyoucolor.hct.cam16 import Cam16
-from materialyoucolor.hct.hct import Hct
-from materialyoucolor.utils.math_utils import sanitizeDegreesDouble, differenceDegrees
-from materialyoucolor.utils.color_utils import lstarFromArgb
+from materialyoucolor.utils.math_utils import (
+    sanitize_degrees_double,
+    difference_degrees,
+    rotation_direction,
+)
+from materialyoucolor.utils.color_utils import lstar_from_argb
 
 
 class Blend:
     @staticmethod
-    def harmonize(designColor, sourceColor):
-        fromHct = Hct.fromInt(designColor)
-        toHct = Hct.fromInt(sourceColor)
-        differenceDegrees_v = differenceDegrees(fromHct.hue, toHct.hue)
-        rotationDegrees = min(differenceDegrees_v * 0.5, 15.0)
-        outputHue = sanitizeDegreesDouble(
-            fromHct.hue
-            + rotationDegrees * Blend.rotationDirection(fromHct.hue, toHct.hue)
+    def harmonize(design_color: int, source_color: int) -> int:
+        from_hct = Hct.from_int(design_color)
+        to_hct = Hct.from_int(source_color)
+        difference_degrees_ = difference_degrees(from_hct.hue, to_hct.hue)
+        rotation_degrees = min(difference_degrees_ * 0.5, 15.0)
+        output_hue = sanitize_degrees_double(
+            from_hct.hue
+            + rotation_degrees * rotation_direction(from_hct.hue, to_hct.hue)
         )
-        return Hct.fromHct(outputHue, fromHct.chroma, fromHct.tone).toInt()
+        return Hct.from_hct(output_hue, from_hct.chroma, from_hct.tone).to_int()
 
     @staticmethod
-    def hctHue(from_v, to, amount):
-        ucs = Blend.cam16Ucs(from_v, to, amount)
-        ucsCam = Cam16.fromInt(ucs)
-        fromCam = Cam16.fromInt(from_v)
-        blended = Hct.fromHct(ucsCam.hue, fromCam.chroma, lstarFromArgb(from_v))
-        return blended.toInt()
+    def hct_hue(from_: int, to: int, amount: int) -> int:
+        ucs = Blend.cam16_ucs(from_, to, amount)
+        ucs_cam = Cam16.from_int(ucs)
+        from_cam = Cam16.from_int(from_)
+        blended = Hct.from_hct(ucs_cam.hue, from_cam.chroma, lstar_from_argb(from_))
+        return blended.to_int()
 
     @staticmethod
-    def cam16Ucs(from_v, to, amount):
-        fromCam = Cam16.fromInt(from_v)
-        toCam = Cam16.fromInt(to)
-        fromJ = fromCam.jstar
-        fromA = fromCam.astar
-        fromB = fromCam.bstar
-        toJ = toCam.jstar
-        toA = toCam.astar
-        toB = toCam.bstar
-        jstar = fromJ + (toJ - fromJ) * amount
-        astar = fromA + (toA - fromA) * amount
-        bstar = fromB + (toB - fromB) * amount
-        return Cam16.fromUcs(jstar, astar, bstar).toInt()
-
-    @staticmethod
-    def rotationDirection(from_v, to):
-        a = to - from_v
-        b = to - from_v + 360.0
-        c = to - from_v - 360.0
-        aAbs = abs(a)
-        bAbs = abs(b)
-        cAbs = abs(c)
-        if aAbs <= bAbs and aAbs <= cAbs:
-            return 1.0 if a >= 0.0 else -1.0
-        elif bAbs <= aAbs and bAbs <= cAbs:
-            return 1.0 if b >= 0.0 else -1.0
-        else:
-            return 1.0 if c >= 0.0 else -1.0
+    def cam16_ucs(from_: int, to: int, amount: float) -> int:
+        from_cam = Cam16.from_int(from_)
+        to_cam = Cam16.from_int(to)
+        from_j = from_cam.jstar
+        from_a = from_cam.astar
+        from_b = from_cam.bstar
+        to_j = to_cam.jstar
+        to_a = to_cam.astar
+        to_b = to_cam.bstar
+        jstar = from_j + (to_j - from_j) * amount
+        astar = from_a + (to_a - from_a) * amount
+        bstar = from_b + (to_b - from_b) * amount
+        return Cam16.from_ucs(jstar, astar, bstar).to_int()
