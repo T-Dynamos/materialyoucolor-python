@@ -1,0 +1,51 @@
+name: Build and Tests (LINUX)
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  build:
+    runs-on: ['ubuntu-latest']
+    container:
+      image: quay.io/pypa/manylinux_2_28_x86_64
+    steps:
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Install dependencies
+      run: |
+        /opt/python/cp39-cp39/bin/pip install --upgrade pip setuptools rich pybind11 wheel requests
+        /opt/python/cp310-cp310/bin/pip install --upgrade pip setuptools rich pybind11 wheel requests
+        /opt/python/cp311-cp311/bin/pip install --upgrade pip setuptools rich pybind11 wheel requests
+        /opt/python/cp312-cp312/bin/pip install --upgrade pip setuptools rich pybind11 wheel requests
+    - name: Build wheel
+      run: |
+        /opt/python/cp39-cp39/bin/python setup.py bdist_wheel
+        /opt/python/cp310-cp310/bin/python setup.py bdist_wheel
+        /opt/python/cp311-cp311/bin/python setup.py bdist_wheel
+        /opt/python/cp312-cp312/bin/python setup.py bdist_wheel
+    - name: Run tests
+      run: |
+        /opt/python/cp39-cp39/bin/pip install --find-links=dist materialyoucolor
+        /opt/python/cp310-cp310/bin/pip install --find-links=dist materialyoucolor
+        /opt/python/cp311-cp311/bin/pip install --find-links=dist materialyoucolor
+        /opt/python/cp312-cp312/bin/pip install --find-links=dist materialyoucolor
+
+        /opt/python/cp39-cp39/bin/python tests/test_color_gen.py test_image.jpg 1
+        /opt/python/cp310-cp310/bin/python tests/test_color_gen.py test_image.jpg 1
+        /opt/python/cp311-cp311/bin/python tests/test_color_gen.py test_image.jpg 1
+        /opt/python/cp312-cp312/bin/python tests/test_color_gen.py test_image.jpg 1
+        
+        /opt/python/cp39-cp39/bin/pip install auditwheel
+        auditwheel repair dist/*
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@v1.5.0
+      if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_TOKEN }}
+        packages_dir: wheelhouse

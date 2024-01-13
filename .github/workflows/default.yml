@@ -1,0 +1,55 @@
+name: Build and Tests (MACOS and WINDOWS)
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+        dist: [bdist_wheel]
+    steps:
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip setuptools rich pybind11 wheel requests
+    - name: Build wheel
+      run: |
+        python setup.py ${{ matrix.dist }}
+    - name: Run tests
+      run: |
+        pip install --find-links=dist materialyoucolor
+        python tests/test_color_gen.py test_image.jpg 1
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: dist
+        path: dist
+  deploy:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Download artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: dist
+        path: dist
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@v1.5.0
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_TOKEN }}
+        packages_dir: dist/
