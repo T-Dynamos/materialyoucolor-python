@@ -18,7 +18,9 @@ if not os.path.isfile(sys.argv[1]):
     with open(sys.argv[1], "wb") as file:
         file.write(
             requests.get(
-        "https://unsplash.com/photos/zFMbpChjZGg/download?ixid=M3wxMjA3fDB8MXxhbGx8OHx8fHx8fDJ8fDE3MDUxMjU2NDh8&force=true").content)
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/"
+        "Lisse%2C_Netherlands_-_panoramio_%2844%29.jpg/1280px-Lisse%2C_Netherlands_-_panoramio_%2844%29.jpg"
+        ).content)
     print("Downloaded!")
 
 console = Console()

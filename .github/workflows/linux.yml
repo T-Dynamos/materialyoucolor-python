@@ -27,7 +27,7 @@ jobs:
         /opt/python/cp39-cp39/bin/python setup.py bdist_wheel
         /opt/python/cp310-cp310/bin/python setup.py bdist_wheel
         /opt/python/cp311-cp311/bin/python setup.py bdist_wheel
-        /opt/python/cp312-cp312/bin/python setup.py bdist_wheel
+        /opt/python/cp312-cp312/bin/python setup.py sdist bdist_wheel
     - name: Run tests
       run: |
         /opt/python/cp39-cp39/bin/pip install --find-links=dist materialyoucolor
@@ -41,6 +41,7 @@ jobs:
         /opt/python/cp312-cp312/bin/python tests/test_color_gen.py test_image.jpg 1
         
         /opt/python/cp39-cp39/bin/pip install auditwheel
+        mp dist/*.tar.gz wheelhouse/
         auditwheel repair dist/*
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@v1.5.0

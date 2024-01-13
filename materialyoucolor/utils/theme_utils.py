@@ -46,8 +46,8 @@ def custom_color(custom_color, source_color=None, blend=False):
     }
 
 
-def theme_from_source_color(source: int, custom_colors: list[int]) -> Theme:
-    palette = CorePalette.of(source)
+def theme_from_source_color(source: int, custom_colors = [], fix_if_disliked=False) -> Theme:
+    palette = CorePalette.of(DislikeAnalyzer.fix_if_disliked(Hct.from_int(source)).to_int() if fix_if_disliked else source)
     return Theme(
         source,
         {"light": Scheme.light(source), "dark": Scheme.dark(source)},
