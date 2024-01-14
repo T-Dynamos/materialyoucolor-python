@@ -13,20 +13,21 @@ from rich.table import Table
 from PIL import Image
 rgba_to_hex = lambda rgba: "#{:02X}{:02X}{:02X}{:02X}".format(*map(round, rgba))
 
-if not os.path.isfile(sys.argv[1]):
+FILENAME = sys.argv[1] 
+
+if not os.path.isfile(FILENAME):
     print("Downloading test image file: ")
-    with open(sys.argv[1], "wb") as file:
+    with open(FILENAME, "wb") as file:
         file.write(
             requests.get(
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/"
-        "Lisse%2C_Netherlands_-_panoramio_%2844%29.jpg/1280px-Lisse%2C_Netherlands_-_panoramio_%2844%29.jpg"
+        "https://unsplash.com/photos/u9tAl8WR3DI/download?ixid=M3wxMjA3fDB8MXx0b3BpY3x8NnNNVmpUTFNrZVF8fHx8fDJ8fDE3MDUyMDgwNjF8&force=true"
         ).content)
-    print("Downloaded!")
+    print("Downloaded: ", FILENAME, os.path.exists(FILENAME))
 
 console = Console()
 
 start = default_timer()
-image = Image.open(sys.argv[1])
+image = Image.open(FILENAME)
 
 pixel_len = image.width * image.height
 image_data = image.getdata()

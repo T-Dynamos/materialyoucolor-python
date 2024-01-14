@@ -41,8 +41,11 @@ jobs:
         /opt/python/cp312-cp312/bin/python tests/test_color_gen.py test_image.jpg 1
         
         /opt/python/cp39-cp39/bin/pip install auditwheel
-        mp dist/*.tar.gz wheelhouse/
+        mkdir wheelhouse
+        mv dist/*.tar.gz wheelhouse/
         auditwheel repair dist/*
+        echo "Built dists:"
+        ls wheelhouse
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@v1.5.0
       if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
