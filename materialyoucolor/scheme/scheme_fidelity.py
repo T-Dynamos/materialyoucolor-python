@@ -22,7 +22,7 @@ class SchemeFidelity(DynamicScheme):
                 ),
                 tertiary_palette=TonalPalette.from_int(
                     DislikeAnalyzer.fix_if_disliked(
-                        TemperatureCache(source_color_hct).complement
+                        TemperatureCache(source_color_hct).complement()
                     ).to_int()
                 ),
                 neutral_palette=TonalPalette.from_hue_and_chroma(

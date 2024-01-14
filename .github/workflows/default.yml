@@ -28,7 +28,7 @@ jobs:
     - name: Run tests
       run: |
         pip install --find-links=dist materialyoucolor
-        python tests/test_color_gen.py test_image.jpg 1
+        python tests/test_all.py test_image.jpg 1
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:

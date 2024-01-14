@@ -119,14 +119,14 @@ class DynamicColor:
             n_contrast = nearer.contrast_curve.get(scheme.contrast_level)
             f_contrast = farther.contrast_curve.get(scheme.contrast_level)
 
-            n_initial_tone = nearer.get_tone(scheme)
+            n_initial_tone = nearer.tone(scheme)
             n_tone = (
                 n_initial_tone
                 if Contrast.ratio_of_tones(bg_tone, n_initial_tone) >= n_contrast
                 else DynamicColor.foreground_tone(bg_tone, n_contrast)
             )
 
-            f_initial_tone = farther.get_tone(scheme)
+            f_initial_tone = farther.tone(scheme)
             f_tone = (
                 f_initial_tone
                 if Contrast.ratio_of_tones(bg_tone, f_initial_tone) >= f_contrast
@@ -166,7 +166,7 @@ class DynamicColor:
             return n_tone if am_nearer else f_tone
 
         else:
-            answer = self.get_tone(scheme)
+            answer = self.tone(scheme)
 
             if self.background is None:
                 return answer

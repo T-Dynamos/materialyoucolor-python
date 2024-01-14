@@ -43,7 +43,7 @@ class TemperatureCache:
 
         absolute_total_temp_delta = 0.0
         for i in range(360):
-            hue = sanitize_degrees_int(start_hue + i)
+            hue = int(sanitize_degrees_int(start_hue + i))
             hct = self.hcts_by_hue[hue]
             temp = self.relative_temperature(hct)
             temp_delta = abs(temp - last_temp)
@@ -56,7 +56,7 @@ class TemperatureCache:
         last_temp = self.relative_temperature(start_hct)
 
         while len(all_colors) < divisions:
-            hue = sanitize_degrees_int(start_hue + hue_addend)
+            hue = int(sanitize_degrees_int(start_hue + hue_addend))
             hct = self.hcts_by_hue[hue]
             temp = self.relative_temperature(hct)
             temp_delta = abs(temp - last_temp)
@@ -123,7 +123,7 @@ class TemperatureCache:
         smallest_error = 1000.0
         answer = self.hcts_by_hue[round(self.input_hct.hue)]
 
-        complement_relative_temp = 1.0 - self.input_hct_relative_temperature
+        complement_relative_temp = 1.0 - self.input_relative_temperature
         for hue_addend in range(0, 360):
             hue = sanitize_degrees_double(
                 start_hue + direction_of_rotation * hue_addend

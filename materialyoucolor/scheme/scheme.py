@@ -39,9 +39,11 @@ class Scheme:
                 "onError": core.error.tone(100),
                 "errorContainer": core.error.tone(90),
                 "onErrorContainer": core.error.tone(10),
-                "background": core.n1.tone(98), # Original was 99, but that didn't worked in light shades of yellow like: [4294309340, 4294638290, 4294967264]
+                "background": core.n1.tone(
+                    98
+                ),  # Original was 99, but that didn't worked in light shades of yellow like: [4294309340, 4294638290, 4294967264]
                 "onBackground": core.n1.tone(10),
-                "surface": core.n1.tone(98), # Here also same
+                "surface": core.n1.tone(98),  # Here also same
                 "onSurface": core.n1.tone(10),
                 "surfaceVariant": core.n2.tone(90),
                 "onSurfaceVariant": core.n2.tone(30),

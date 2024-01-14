@@ -2,6 +2,7 @@ from materialyoucolor.utils.color_utils import lstar_from_argb, lstar_from_y
 from materialyoucolor.hct.viewing_conditions import ViewingConditions
 from materialyoucolor.hct.cam16 import Cam16
 from materialyoucolor.hct.hct_solver import HctSolver
+from materialyoucolor.utils.color_utils import rgba_from_argb
 
 
 class Hct:
@@ -29,6 +30,9 @@ class Hct:
 
     def to_int(self) -> int:
         return self.argb
+
+    def to_rgba(self) -> list:
+        return rgba_from_argb(self.argb)
 
     @property
     def hue(self) -> float:

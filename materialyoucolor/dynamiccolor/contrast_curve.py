@@ -8,7 +8,7 @@ class ContrastCurve:
         self.medium = medium
         self.high = high
 
-    def get_contrast(self, contrast_level: float) -> float:
+    def get(self, contrast_level: float) -> float:
         if contrast_level <= -1.0:
             return self.low
         elif contrast_level < 0.0:

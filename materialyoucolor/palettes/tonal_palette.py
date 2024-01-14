@@ -1,5 +1,6 @@
 from materialyoucolor.hct import Hct
 from materialyoucolor.utils.color_utils import rgba_from_argb
+from materialyoucolor.utils.color_utils import argb_from_rgb
 
 
 class TonalPalette:
@@ -54,4 +55,4 @@ class TonalPalette:
         return rgba_from_argb(argb)
 
     def get_hct(self, tone: float) -> Hct:
-        return Hct.from_int(self.tone(tone))
+        return Hct.from_int(argb_from_rgb(*self.tone(tone)))

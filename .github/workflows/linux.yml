@@ -35,10 +35,10 @@ jobs:
         /opt/python/cp311-cp311/bin/pip install --find-links=dist materialyoucolor
         /opt/python/cp312-cp312/bin/pip install --find-links=dist materialyoucolor
 
-        /opt/python/cp39-cp39/bin/python tests/test_color_gen.py test_image.jpg 1
-        /opt/python/cp310-cp310/bin/python tests/test_color_gen.py test_image.jpg 1
-        /opt/python/cp311-cp311/bin/python tests/test_color_gen.py test_image.jpg 1
-        /opt/python/cp312-cp312/bin/python tests/test_color_gen.py test_image.jpg 1
+        /opt/python/cp39-cp39/bin/python tests/test_all.py test_image.jpg 1
+        /opt/python/cp310-cp310/bin/python tests/test_all.py test_image.jpg 1
+        /opt/python/cp311-cp311/bin/python tests/test_all.py test_image.jpg 1
+        /opt/python/cp312-cp312/bin/python tests/test_all.py test_image.jpg 1
         
         /opt/python/cp39-cp39/bin/pip install auditwheel
         mkdir wheelhouse
