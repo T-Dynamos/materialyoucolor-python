@@ -3,7 +3,7 @@ import sys
 import urllib.request
 from glob import glob
 from setuptools import find_packages, setup
-from pybind11.setup_helpers import Pybind11Extension
+from setup_helpers import Pybind11Extension
 
 assert sys.version_info >= (3, 7, 0), "Materialyoucolor requires Python 3.7+"
 

@@ -21,7 +21,7 @@ jobs:
       uses: actions/checkout@v2
     - name: Install dependencies
       run: |
-        pip install --upgrade pip setuptools rich pybind11 wheel requests
+        pip install --upgrade pip setuptools rich  wheel requests
     - name: Build wheel
       run: |
         python setup.py ${{ matrix.dist }}

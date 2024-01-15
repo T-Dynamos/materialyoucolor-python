@@ -2,7 +2,7 @@ build
 patch
 dist 
 *.egg* 
-*.cc
-*.h
+materialyoucolor/quantize/*.cc
+materialyoucolor/quantize/*.h
 __pycache__
 *.pyc

@@ -30,8 +30,8 @@ diff '--color=auto' -uNr patch/celebi.cc materialyoucolor/quantize/celebi.cc
 +#include "wsmeans.h"
 +#include "wu.h"
 +#include "utils.h"
-+#include <pybind11/pybind11.h>
-+#include <pybind11/stl.h>
++#include "pybind11/pybind11.h"
++#include "pybind11/stl.h"
 +
 +namespace python = pybind11;
 +
