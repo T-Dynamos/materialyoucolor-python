@@ -93,11 +93,6 @@ diff '--color=auto' -uNr patch/celebi.h materialyoucolor/quantize/celebi.h
  
  namespace material_color_utilities {
  
-diff '--color=auto' -uNr patch/__init__.py materialyoucolor/quantize/__init__.py
---- patch/__init__.py	1970-01-01 05:30:00.000000000 +0530
-+++ materialyoucolor/quantize/__init__.py	2023-12-29 15:47:38.879196659 +0530
-@@ -0,0 +1 @@
-+from .celebi import QuantizeCelebi
 diff '--color=auto' -uNr patch/lab.cc materialyoucolor/quantize/lab.cc
 --- patch/lab.cc	2024-01-13 11:47:16.030646286 +0530
 +++ materialyoucolor/quantize/lab.cc	2023-12-29 11:08:43.363374804 +0530
