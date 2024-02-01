@@ -2,6 +2,10 @@
 
 # [Material You color algorithms](https://m3.material.io/styles/color/overview) for python!
 
+## Features 
+
+1. Up to date with `material-foundation/material-color-utilities/`.
+2. Uses official c++ sources for quantization backend, which makes color generation fast!
 
 ## Minimal running example:
 
@@ -41,7 +45,7 @@ It is built in reference with offical [typescript implementation](https://github
 ```console
 # Install pybind 11 
 pip3 install pybind11
-pip3 install https://github.com/T-Dynamos/materialyoucolor-pyhton/archive/develop.zip
+pip3 install https://github.com/T-Dynamos/materialyoucolor-python/archive/develop.zip
 
 ```
 
@@ -49,4 +53,4 @@ pip3 install https://github.com/T-Dynamos/materialyoucolor-pyhton/archive/develo
     
 1. How it is different from `avanisubbiah/material-color-utilities`?
 
-See https://github.com/T-Dynamos/materialyoucolor-pyhton/issues/3
+See https://github.com/T-Dynamos/materialyoucolor-python/issues/3
