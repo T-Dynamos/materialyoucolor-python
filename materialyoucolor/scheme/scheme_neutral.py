@@ -8,7 +8,7 @@ class SchemeNeutral(DynamicScheme):
         super().__init__(
             DynamicSchemeOptions(
                 source_color_argb=source_color_hct.to_int(),
-                variant=Variant.NEUTRAL,
+                variant=Variant.SPRITZ,
                 contrast_level=contrast_level,
                 is_dark=is_dark,
                 primary_palette=TonalPalette.from_hue_and_chroma(
