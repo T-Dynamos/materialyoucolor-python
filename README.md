@@ -1,6 +1,7 @@
 ![image](https://github.com/T-Dynamos/materialyoucolor-pyhton/assets/68729523/b29c17d1-6c02-4c07-9a72-5b0198034760)
 
 # [Material You color algorithms](https://m3.material.io/styles/color/overview) for python!
+It is built in reference with offical [typescript implementation](https://github.com/material-foundation/material-color-utilities/tree/main/typescript) except it's color quantization part, which is based on [c++ implementation](https://github.com/material-foundation/material-color-utilities/tree/main/cpp) thanks to [pybind](https://github.com/pybind).
 
 ## Features 
 
@@ -35,16 +36,13 @@ You can easily install it from pip by executing:
 ```console
 pip3 install materialyoucolor --upgrade
 ```
-Prebuilt binaries are avaliable for `linux`, `windows` and `macos`.
+Prebuilt binaries are avaliable for `linux`, `windows` and `macos`. If prebuilt binaries aren't available, then you should manually build and install.
 
 
 ## Build and install
 
-It is built in reference with offical [typescript implementation](https://github.com/material-foundation/material-color-utilities/tree/main/typescript) but it's color quantization part is based on [c++ implementation](https://github.com/material-foundation/material-color-utilities/tree/main/cpp) thanks to [pybind](https://github.com/pybind).
-
 ```console
-# Install pybind 11 
-pip3 install pybind11
+# Install 
 pip3 install https://github.com/T-Dynamos/materialyoucolor-python/archive/develop.zip
 
 ```
