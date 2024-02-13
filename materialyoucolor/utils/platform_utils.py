@@ -54,13 +54,12 @@ DEFAULT_RESIZE_BITMAP_AREA = 112 * 112
 
 
 def _is_android() -> bool:
-    if autoclass:
-        try:
-            from android import mActivity
-
-            return True
-        except Exception:
-            pass
+    try:
+        from android import mActivity
+        return True
+    except Exception as e:
+        print("Platform does not seems to be android")
+        pass
     return False
 
 
