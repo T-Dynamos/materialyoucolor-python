@@ -66,6 +66,8 @@ APPROX_TONE = 200
 APPROX_CHROMA = 50
 DEFAULT_RESIZE_BITMAP_AREA = 112 * 112
 
+WALLPAPER_CACHE = {}
+
 
 def _is_android() -> bool:
     try:
@@ -262,8 +264,25 @@ def get_dynamic_scheme(
                     logger("Failed to get system wallpaper : " + str(e))
                     fallback_wallpaper_path = None
 
+    if all(
+        [
+            not selected_color,
+            not selected_scheme,
+            fallback_wallpaper_path in WALLPAPER_CACHE.keys()
+            and WALLPAPER_CACHE[fallback_wallpaper_path][1]
+            == os.path.getsize(fallback_wallpaper_path),
+        ]
+    ):
+        logger(
+            "Got wallpaper color from cache '{}'".format(
+                WALLPAPER_CACHE[fallback_wallpaper_path][0]
+            )
+        )
+        selected_color = WALLPAPER_CACHE[fallback_wallpaper_path][0]
+
     if (
-        not selected_color
+        not selected_scheme
+        and not selected_color
         and fallback_wallpaper_path
         and (image := open_wallpaper_file(fallback_wallpaper_path))
     ):
@@ -282,6 +301,10 @@ def get_dynamic_scheme(
         timer_start = default_timer()
         colors = QuantizeCelebi(pixel_array, 128)
         selected_color = Score.score(colors)[0]
+        WALLPAPER_CACHE[fallback_wallpaper_path] = [
+            selected_color,
+            os.path.getsize(fallback_wallpaper_path),
+        ]
         logger(f"Got dominant colors - " f"{default_timer() - timer_start} sec.")
 
     return (
