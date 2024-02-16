@@ -2,6 +2,7 @@ import json
 import os
 from glob import glob as path_find
 import math
+from timeit import default_timer
 
 from materialyoucolor.scheme.scheme_tonal_spot import SchemeTonalSpot
 from materialyoucolor.scheme.scheme_expressive import SchemeExpressive
@@ -17,17 +18,29 @@ from materialyoucolor.scheme.dynamic_scheme import DynamicSchemeOptions, Dynamic
 from materialyoucolor.palettes.tonal_palette import TonalPalette
 from materialyoucolor.scheme.variant import Variant
 from materialyoucolor.utils.color_utils import argb_from_rgba_01, srgb_to_argb
+from materialyoucolor.utils.math_utils import sanitize_degrees_double
 from materialyoucolor.hct import Hct
 from materialyoucolor.quantize import QuantizeCelebi
 from materialyoucolor.score.score import Score
 from materialyoucolor.dynamiccolor.material_dynamic_colors import MaterialDynamicColors
 
+autoclass = None
+
 try:
     from jnius import autoclass
     from android import mActivity
+
+    Integer = autoclass("java.lang.Integer")
+    BuildVERSION = autoclass("android.os.Build$VERSION")
+    context = mActivity.getApplicationContext()
+    WallpaperManager = autoclass("android.app.WallpaperManager").getInstance(mActivity)
+except Exception:
+    pass
+
+try:
     from PIL import Image
 except Exception:
-    autoclass = None
+    Image = None
 
 SCHEMES = {
     "TONAL_SPOT": SchemeTonalSpot,
@@ -49,16 +62,17 @@ COLOR_NAMES = {
     "neutral_palette": "system_neutral1_{}",
     "neutral_variant_palette": "system_neutral2_{}",
 }
-
+APPROX_TONE = 200
+APPROX_CHROMA = 50
 DEFAULT_RESIZE_BITMAP_AREA = 112 * 112
 
 
 def _is_android() -> bool:
     try:
         from android import mActivity
+
         return True
     except Exception as e:
-        print("Platform does not seems to be android")
         pass
     return False
 
@@ -67,11 +81,12 @@ def save_and_resize_bitmap(drawable, path):
     CompressFormat = autoclass("android.graphics.Bitmap$CompressFormat")
     FileOutputStream = autoclass("java.io.FileOutputStream")
     Bitmap = autoclass("android.graphics.Bitmap")
+    BitmapConfig = autoclass("android.graphics.Bitmap$Config")
     Canvas = autoclass("android.graphics.Canvas")
     bitmap = Bitmap.createBitmap(
         drawable.getIntrinsicWidth(),
         drawable.getIntrinsicHeight(),
-        Bitmap.Config.ARGB_8888,
+        BitmapConfig.ARGB_8888,
     )
     canvas = Canvas(bitmap)
     drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight())
@@ -94,101 +109,122 @@ def save_and_resize_bitmap(drawable, path):
         100,
         FileOutputStream(path),
     )
-    return bitmap.getWidth(), bitmap.getHeight
+    return bitmap.getWidth(), bitmap.getHeight()
 
 
 def reverse_color_from_primary(color, scheme):
+    # TODO: Find solution
+    # Here we are using APPROX_TONE and APPROX_CHROMA
+    # because information is lost.
+    # Which likely will affect these colors:
+    # primaryContainer, tertiaryContainer
+    temp_hct = Hct.from_int(color)
     reversed_color = color
-    # if scheme == "TONAL_SPOT":
-    #    temp_hct = Hct.from_int(color)
-
+    if scheme in ["TONAL_SPOT", "SPRITZ", "VIBRANT", "RAINBOW", "CHROMA"]:
+        reversed_color = Hct.from_hct(temp_hct.hue, APPROX_CHROMA, APPROX_TONE).to_int()
+    elif scheme == "EXPRESSIVE":
+        reversed_color = Hct.from_hct(
+            sanitize_degrees_double(temp_hct.hue - 240.0), APPROX_CHROMA, APPROX_TONE
+        ).to_int()
+    elif scheme == "FRUIT_SALAD":
+        reversed_color = Hct.from_hct(
+            sanitize_degrees_double(temp_hct.hue + 50.0), APPROX_CHROMA, APPROX_TONE
+        ).to_int()
+    elif scheme in ["FIDELITY", "CONTENT"]:
+        # We have chroma info same as source here!
+        reversed_color = Hct.from_hct(
+            temp_hct.hue, temp_hct.chroma, APPROX_TONE
+        ).to_int()
     return reversed_color
 
 
-def get_scheme(
-    wallpaper_path=None,
-    fallback_scheme="TONAL_SPOT",
+def _get_android_12_above(
+    logger, selected_scheme="TONAL_SPOT", contrast=0.0, dark_mode=False
+) -> DynamicScheme:
+    SettingsSecure = autoclass("android.provider.Settings$Secure")
+    theme_settings = json.loads(
+        SettingsSecure.getString(
+            context.getContentResolver(),
+            SettingsSecure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
+        )
+    )
+    # Android 14 has this method
+    try:
+        contrast = mActivity.getSystemService(context.UI_MODE_SERVICE).getContrast()
+        logger("Got contrast '{}'".format(contrast))
+    except Exception:
+        pass
+
+    # See if system supports mutiple schemes
+    if OPTION_THEME_STYLE in theme_settings.keys():
+        selected_scheme = theme_settings[OPTION_THEME_STYLE]
+        logger("Got system theme style '{}'".format(selected_scheme))
+
+    # Get system colors
+    get_system_color = lambda color_name: srgb_to_argb(
+        context.getColor(
+            context.getResources().getIdentifier(
+                COLOR_NAMES[color_name].format(APPROX_TONE),
+                "color",
+                "android",
+            )
+        )
+    )
+    color_names = COLOR_NAMES.copy()
+    for color_name in COLOR_NAMES.keys():
+        hct = Hct.from_int(get_system_color(color_name))
+        color_names[color_name] = TonalPalette.from_hue_and_chroma(hct.hue, hct.chroma)
+
+    return DynamicScheme(
+        DynamicSchemeOptions(
+            reverse_color_from_primary(
+                get_system_color("primary_palette"),
+                selected_scheme,
+            ),
+            getattr(Variant, selected_scheme),
+            contrast,
+            dark_mode,
+            **color_names,
+        )
+    )
+
+
+def open_wallpaper_file(file_path) -> Image:
+    try:
+        return Image.open(file_path)
+    except Exception:
+        return None
+
+
+def get_dynamic_scheme(
+    # Scheme options
     dark_mode=True,
     contrast=0.0,
     dynamic_color_quality=10,
+    # Fallbacks
+    fallback_wallpaper_path=None,
+    fallback_scheme_name="TONAL_SPOT",
+    force_fallback_wallpaper=False,
+    # Logging
     message_logger=print,
-    fallback_color=0xFF0000FF,
     logger_head="MaterialYouColor",
-):
-    is_android = _is_android()
-    selected_color = None
+) -> DynamicScheme:
     logger = lambda message: message_logger(logger_head + " : " + message)
-    dynamic_scheme = None
+
+    is_android = _is_android()
+    selected_scheme = None
+    selected_color = None
 
     if is_android:
-        Integer = autoclass("java.lang.Integer")
-        BuildVERSION = autoclass("android.os.Build$VERSION")
-        context = mActivity.getApplicationContext()
-        WallpaperManager = autoclass("android.app.WallpaperManager").getInstance(
-            mActivity
-        )
         # For Android 12 and 12+
         if BuildVERSION.SDK_INT >= 31:
-            logger("Device supports MaterialYou")
-            SettingsSecure = autoclass("android.provider.Settings$Secure")
-            theme_settings = json.loads(
-                SettingsSecure.getString(
-                    context.getContentResolver(),
-                    SettingsSecure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
-                )
-            )
-            # Android 14 has this method
-            try:
-                contrast = mActivity.getSystemService(
-                    context.UI_MODE_SERVICE
-                ).getContrast()
-                logger("Got contrast '{}'".format(contrast))
-            except Exception:
-                pass
-
-            if OPTION_THEME_STYLE in theme_settings.keys():
-                fallback_scheme = theme_settings[OPTION_THEME_STYLE]
-                logger("Got system theme style '{}'".format(fallback_scheme))
-
-            color_names = COLOR_NAMES.copy()
-            for color_name in list(COLOR_NAMES.keys())[::-1]:
-                hct = Hct.from_int(
-                    srgb_to_argb(
-                        context.getColor(
-                            context.getResources().getIdentifier(
-                                color_names[color_name].format(100),
-                                "color",
-                                "android",
-                            )
-                        )
-                    )
-                )
-                color_names[color_name] = TonalPalette.from_hue_and_chroma(
-                    hct.hue, hct.chroma
-                )
-
-            dynamic_scheme = DynamicScheme(
-                DynamicSchemeOptions(
-                    # TODO: Get accurate source color
-                    srgb_to_argb(
-                        context.getColor(
-                            context.getResources().getIdentifier(
-                                COLOR_NAMES["primary_palette"].format(100),
-                                "color",
-                                "android",
-                            )
-                        )
-                    ),
-                    getattr(Variant, fallback_scheme),
-                    contrast,
-                    dark_mode,
-                    **color_names
-                )
+            selected_scheme = _get_android_12_above(
+                logger, selected_scheme, contrast, dark_mode
             )
 
         # For Android 8.1 and 8.1+
         elif BuildVERSION.SDK_INT >= 27:
-            logger("Device does not supports MaterialYou")
+            logger("Device doesn't supports MaterialYou")
             selected_color = argb_from_rgba_01(
                 WallpaperManager.getWallpaperColors(WallpaperManager.FLAG_SYSTEM)
                 .getPrimaryColor()
@@ -197,38 +233,41 @@ def get_scheme(
             logger("Got top color from wallpaper '{}'".format(selected_color))
 
         # Lower than 8.1
-        else:
+        elif not force_fallback_wallpaper:
             logger(
-                "Device does neither supports materialyoucolor"
-                " nor provides pregenerated colors"
+                "Device does neither supports materialyoucolor "
+                "nor provides pregenerated colors"
             )
             wallpaper_store_dir = context.getFilesDir().getAbsolutePath()
             wallpaper_file = ".wallpaper-{}.png".format(
                 WallpaperManager.getWallpaperId(WallpaperManager.FLAG_SYSTEM)
             )
-            wallpaper_path = os.path.join(wallpaper_store_dir, wallpaper_file)
+            fallback_wallpaper_path = os.path.join(wallpaper_store_dir, wallpaper_file)
 
-            if not os.path.isfile(wallpaper_path):
+            if not os.path.isfile(fallback_wallpaper_path):
                 previous_files = path_find(
                     os.path.join(wallpaper_store_dir, ".wallpaper-*.png")
                 )
                 [os.remove(file) for file in previous_files]
                 try:
+                    # Requires `android.permission.READ_EXTERNAL_STORAGE` permission
                     wallpaper_drawable = WallpaperManager.getDrawable()
                     width, height = save_and_resize_bitmap(
-                        wallpaper_drawable, wallpaper_path
+                        wallpaper_drawable, fallback_wallpaper_path
                     )
                     logger(
-                        "Got the system wallpaper with size: '{}x{}'".format(
-                            width, height
-                        )
+                        "Resized the system wallpaper : '{}x{}'".format(width, height)
                     )
                 except Exception as e:
                     logger("Failed to get system wallpaper : " + str(e))
-                    wallpaper_path = None
+                    fallback_wallpaper_path = None
 
-    if not selected_color and wallpaper_path:
-        image = Image.open(wallpaper_path)
+    if (
+        not selected_color
+        and fallback_wallpaper_path
+        and (image := open_wallpaper_file(fallback_wallpaper_path))
+    ):
+        timer_start = default_timer()
         pixel_len = image.width * image.height
         image_data = image.getdata()
         # TODO: Think about getting data from bitmap
@@ -236,18 +275,25 @@ def get_scheme(
             image_data[_]
             for _ in range(0, pixel_len, dynamic_color_quality if not is_android else 1)
         ]
+        logger(
+            f"Created an array of pixels from a "
+            f"system wallpaper file - {default_timer() - timer_start} sec."
+        )
+        timer_start = default_timer()
         colors = QuantizeCelebi(pixel_array, 128)
         selected_color = Score.score(colors)[0]
-    elif not selected_color:
-        logger("Using defined color '{}'".format(fallback_color))
-        selected_color = fallback_color
+        logger(f"Got dominant colors - " f"{default_timer() - timer_start} sec.")
 
     return (
-        SCHEMES[fallback_scheme](
-            Hct.from_int(selected_color),
-            dark_mode,
-            contrast,
+        (
+            SCHEMES[fallback_scheme_name](
+                Hct.from_int(selected_color),
+                dark_mode,
+                contrast,
+            )
+            if selected_color
+            else None
         )
-        if not dynamic_scheme
-        else dynamic_scheme
+        if not selected_scheme
+        else selected_scheme
     )

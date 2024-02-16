@@ -127,8 +127,10 @@ def lstar_from_argb(argb: int) -> float:
 def y_from_lstar(lstar: float) -> float:
     return 100.0 * lab_invf((lstar + 16.0) / 116.0)
 
+
 def srgb_to_argb(srgb):
     return int("0xff{:06X}".format(0xFFFFFF & srgb), 16)
+
 
 def lstar_from_y(y: float) -> float:
     return lab_f(y / 100.0) * 116.0 - 16.0
@@ -177,8 +179,10 @@ def argb_from_rgba(rgba: list[int]) -> int:
     a_value = clamp_component(rgba[3])
     return (a_value << 24) | (r_value << 16) | (g_value << 8) | b_value
 
+
 def argb_from_rgba_01(rgba: list[int]) -> int:
-    return argb_from_rgba([int(_*255) for _ in rgba])
+    return argb_from_rgba([int(_ * 255) for _ in rgba])
+
 
 def clamp_component(value: int) -> int:
     if value < 0:
