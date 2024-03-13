@@ -47,6 +47,14 @@ pip3 install https://github.com/T-Dynamos/materialyoucolor-python/archive/master
 
 ```
 
+## Usage with Android (kivy's buildozer)
+
+Ensure these lines in `buildozer.spec`:
+```python
+requirements = materialyoucolor
+p4a.branch = develop
+```
+
 ## Usage examples
 
 - Generate non dynamic colors
