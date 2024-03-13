@@ -43,7 +43,7 @@ Prebuilt binaries are avaliable for `linux`, `windows` and `macos`. If prebuilt 
 
 ```console
 # Install 
-pip3 install https://github.com/T-Dynamos/materialyoucolor-python/archive/develop.zip
+pip3 install https://github.com/T-Dynamos/materialyoucolor-python/archive/master.zip
 
 ```
 
