@@ -5,7 +5,7 @@ It is built in reference with offical [typescript implementation](https://github
 
 ## Features 
 
-1. Up to date with `material-foundation/material-color-utilities/`.
+1. Up to date with `material-foundation/material-color-utilities`.
 2. Uses official c++ sources for quantization backend, which makes color generation fast!
 
 ## Minimal running example:
@@ -30,7 +30,9 @@ Maximum quality is `1` that means use all pixels, and quality number more than `
 </details>
 
 
-## Install
+## Usage
+
+### Install
 
 You can easily install it from pip by executing:
 ```console
@@ -39,7 +41,7 @@ pip3 install materialyoucolor --upgrade
 Prebuilt binaries are avaliable for `linux`, `windows` and `macos`. If prebuilt binaries aren't available, then you should manually build and install.
 
 
-## Build and install
+### Build and install
 
 ```console
 # Install 
@@ -47,7 +49,7 @@ pip3 install https://github.com/T-Dynamos/materialyoucolor-python/archive/master
 
 ```
 
-## Usage with Android (kivy's buildozer)
+### Usage with Android (kivy's buildozer)
 
 Ensure these lines in `buildozer.spec`:
 ```python
@@ -56,7 +58,9 @@ p4a.branch = develop
 ```
 
 ## Usage examples
-
+<details>
+<summary> Click to show </summary>
+    
 - Generate non dynamic colors
 
 ```python
@@ -139,6 +143,7 @@ print(Score.score(result))
 # list of selected colors in integer form
 
 ```
+</details>
 
 ## FAQ
     
