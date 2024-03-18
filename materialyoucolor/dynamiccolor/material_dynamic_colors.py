@@ -76,6 +76,7 @@ def on_tertiary_container_tone(s):
 class MaterialDynamicColors:
     content_accent_tone_delta = 15.0
 
+    @staticmethod
     def highestSurface(s: DynamicScheme) -> DynamicColor:
         return (
             MaterialDynamicColors.surfaceBright

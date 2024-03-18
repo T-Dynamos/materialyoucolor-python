@@ -30,6 +30,14 @@ class FromPaletteOptions:
 
 class DynamicColor:
     hct_cache = dict[DynamicScheme, Hct]
+    name = str
+    palette = None
+    tone = int
+    is_background = bool
+    background = None
+    second_background = None
+    contrast_curve = None
+    tone_delta_pair = None
 
     def __init__(
         self,
@@ -189,153 +197,6 @@ class DynamicColor:
 
             if self.second_background:
                 bg1, bg2 = self.background, self.second_background
-                bg_tone1, bg_tone2 = bg1(scheme).get_tone(scheme), bg2(scheme).get_tone(
-                    scheme
-                )
-                upper, lower = max(bg_tone1, bg_tone2), min(bg_tone1, bg_tone2)
-
-                if (
-                    Contrast.ratio_of_tones(upper, answer) >= desired_ratio
-                    and Contrast.ratio_of_tones(lower, answer) >= desired_ratio
-                ):
-                    return answer
-
-                light_option = Contrast.lighter(upper, desired_ratio)
-                dark_option = Contrast.darker(lower, desired_ratio)
-                availables = [light_option] if light_option != -1 else []
-                if dark_option != -1:
-                    availables.append(dark_option)
-
-                prefers_light = DynamicColor.tone_prefers_light_foreground(
-                    bg_tone1
-                ) or DynamicColor.tone_prefers_light_foreground(bg_tone2)
-                return (
-                    light_option
-                    if prefers_light and (light_option == -1 or dark_option == -1)
-                    else dark_option
-                )
-
-            return answer
-
-    @staticmethod
-    def get_argb_static(scheme):
-        return DynamicColor.get_hct_static(scheme).to_int()
-
-    @staticmethod
-    def get_hct_static(scheme):
-        cached_answer = DynamicColor.hct_cache_static.get(scheme)
-        if cached_answer is not None:
-            return cached_answer
-
-        tone = DynamicColor.get_tone_static(scheme)
-        answer = DynamicColor.palette_static(scheme).get_hct(tone)
-        if len(DynamicColor.hct_cache_static) > 4:
-            DynamicColor.hct_cache_static.clear()
-        DynamicColor.hct_cache_static[scheme] = answer
-        return answer
-
-    @staticmethod
-    def get_tone_static(scheme):
-        decreasing_contrast = scheme.contrast_level < 0
-
-        if DynamicColor.tone_delta_pair_static:
-            tone_delta_pair = DynamicColor.tone_delta_pair_static(scheme)
-            role_a, role_b = tone_delta_pair.role_a, tone_delta_pair.role_b
-            delta, polarity, stay_together = (
-                tone_delta_pair.delta,
-                tone_delta_pair.polarity,
-                tone_delta_pair.stay_together,
-            )
-
-            bg = DynamicColor.background_static(scheme)
-            bg_tone = bg.get_tone(scheme)
-
-            a_is_nearer = (
-                polarity == "nearer"
-                or (polarity == "lighter" and not scheme.is_dark)
-                or (polarity == "darker" and scheme.is_dark)
-            )
-            nearer, farther = (role_a, role_b) if a_is_nearer else (role_b, role_a)
-            expansion_dir = 1 if scheme.is_dark else -1
-
-            n_contrast = nearer.contrast_curve.get(scheme.contrast_level)
-            f_contrast = farther.contrast_curve.get(scheme.contrast_level)
-
-            n_initial_tone = nearer.get_tone(scheme)
-            n_tone = (
-                n_initial_tone
-                if Contrast.ratio_of_tones(bg_tone, n_initial_tone) >= n_contrast
-                else DynamicColor.foreground_tone(bg_tone, n_contrast)
-            )
-
-            f_initial_tone = farther.get_tone(scheme)
-            f_tone = (
-                f_initial_tone
-                if Contrast.ratio_of_tones(bg_tone, f_initial_tone) >= f_contrast
-                else DynamicColor.foreground_tone(bg_tone, f_contrast)
-            )
-
-            if decreasing_contrast:
-                n_tone = DynamicColor.foreground_tone(bg_tone, n_contrast)
-                f_tone = DynamicColor.foreground_tone(bg_tone, f_contrast)
-
-            if (f_tone - n_tone) * expansion_dir >= delta:
-                pass
-            else:
-                f_tone = (
-                    min(max(n_tone + delta * expansion_dir, 0), 100)
-                    if (f_tone - n_tone) * expansion_dir >= delta
-                    else min(max(f_tone - delta * expansion_dir, 0), 100)
-                )
-
-            if 50 <= n_tone < 60:
-                if expansion_dir > 0:
-                    n_tone, f_tone = 60, max(f_tone, n_tone + delta * expansion_dir)
-                else:
-                    n_tone, f_tone = 49, min(f_tone, n_tone + delta * expansion_dir)
-            elif 50 <= f_tone < 60:
-                if stay_together:
-                    if expansion_dir > 0:
-                        n_tone, f_tone = 60, max(f_tone, n_tone + delta * expansion_dir)
-                    else:
-                        n_tone, f_tone = 49, min(f_tone, n_tone + delta * expansion_dir)
-                else:
-                    if expansion_dir > 0:
-                        f_tone = 60
-                    else:
-                        f_tone = 49
-
-            return n_tone if DynamicColor.name_static == nearer.name else f_tone
-
-        else:
-            answer = DynamicColor.get_tone_static(scheme)
-
-            if DynamicColor.background_static is None:
-                return answer
-
-            bg_tone = DynamicColor.background_static(scheme).get_tone(scheme)
-            desired_ratio = DynamicColor.contrast_curve_static.get(
-                scheme.contrast_level
-            )
-
-            if Contrast.ratio_of_tones(bg_tone, answer) >= desired_ratio:
-                pass
-            else:
-                answer = DynamicColor.foreground_tone(bg_tone, desired_ratio)
-
-            if decreasing_contrast:
-                answer = DynamicColor.foreground_tone(bg_tone, desired_ratio)
-
-            if DynamicColor.is_background_static and 50 <= answer < 60:
-                answer = (
-                    49 if Contrast.ratio_of_tones(49, bg_tone) >= desired_ratio else 60
-                )
-
-            if DynamicColor.second_background_static:
-                bg1, bg2 = (
-                    DynamicColor.background_static,
-                    DynamicColor.second_background_static,
-                )
                 bg_tone1, bg_tone2 = bg1(scheme).get_tone(scheme), bg2(scheme).get_tone(
                     scheme
                 )

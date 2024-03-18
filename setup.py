@@ -1,3 +1,15 @@
+import sys
+
+OPTIONS = ["PURE_PYTHON"]
+
+for option in OPTIONS:
+    globals()[option] = False
+    option_name = "--" + option.lower().replace("_", "-")
+    if option_name in sys.argv:
+        while option_name in sys.argv:
+            sys.argv.remove(option_name)
+        globals()[option] = True
+
 """
 This module provides helpers for C++11+ projects using pybind11.
 
@@ -42,7 +54,6 @@ import os
 import platform
 import shlex
 import shutil
-import sys
 import sysconfig
 import tempfile
 import threading
@@ -531,8 +542,11 @@ FILES = list(
     ]
 ) + ["utils/utils.h", "utils/utils.cc"]
     
-if all([os.path.isfile(os.path.join(FOLDER, os.path.basename(_))) for _ in FILES]):
-    print("Skipping download...")
+if all([os.path.isfile(os.path.join(FOLDER, os.path.basename(_))) for _ in FILES]) or PURE_PYTHON:
+    print("Skipping download...") if not PURE_PYTHON else print(
+        "\nWarning: Skipping build of extension : `QuantizeCelebi`"
+        "\nYou won't be able to use dominant color getting part.\n"
+    )
 else:
     print("Downloading required files...")
     for file in FILES:
@@ -562,5 +576,5 @@ setup(
         "materialyoucolor.quantize.celebi",
         sorted(glob("materialyoucolor/quantize/*.cc")),
         extra_compile_args=['-std=c++17'] if os.name != 'nt' else ['/std:c++17']
-        ) ]
+        ) if not PURE_PYTHON else ()]
 )

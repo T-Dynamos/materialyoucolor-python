@@ -20,9 +20,13 @@ from materialyoucolor.scheme.variant import Variant
 from materialyoucolor.utils.color_utils import argb_from_rgba_01, srgb_to_argb
 from materialyoucolor.utils.math_utils import sanitize_degrees_double
 from materialyoucolor.hct import Hct
-from materialyoucolor.quantize import QuantizeCelebi
 from materialyoucolor.score.score import Score
 from materialyoucolor.dynamiccolor.material_dynamic_colors import MaterialDynamicColors
+
+try:
+    from materialyoucolor.quantize import QuantizeCelebi
+except:
+    QuantizeCelebi = None
 
 autoclass = None
 
@@ -285,6 +289,7 @@ def get_dynamic_scheme(
         and not selected_color
         and fallback_wallpaper_path
         and (image := open_wallpaper_file(fallback_wallpaper_path))
+        and QuantizeCelebi is not None
     ):
         timer_start = default_timer()
         pixel_len = image.width * image.height
