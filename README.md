@@ -49,12 +49,19 @@ pip3 install https://github.com/T-Dynamos/materialyoucolor-python/archive/master
 
 ```
 
-### Usage with Android (kivy's buildozer)
+#### Android (using kivy's [`buildozer`](https://github.com/kivy/buildozer))
 
 Ensure these lines in `buildozer.spec`:
 ```python
 requirements = materialyoucolor
 p4a.branch = develop
+```
+
+#### IOS (using kivy's [`kivy-ios`](https://github.com/kivy/kivy-ios))
+
+Install latest version of kivy-ios and use as:
+```console
+toolchain build materialyoucolor
 ```
 
 ## Usage examples
