@@ -1,0 +1,1 @@
+recursive-include  materialyoucolor/quantize/ *.h
