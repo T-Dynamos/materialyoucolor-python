@@ -41,6 +41,14 @@ pip3 install materialyoucolor --upgrade
 Prebuilt binaries are avaliable for `linux`, `windows` and `macos`. If prebuilt binaries aren't available, then you should manually build and install.
 
 
+### Arch Linux
+
+```console
+yay -S python-materialyoucolor
+```
+
+Thanks :heart: to [@midn8hustlr](https://github.com/midn8hustlr) for this [AUR package](https://aur.archlinux.org/cgit/aur.git/?h=python-materialyoucolor-git).
+
 ### Build and install
 
 ```console
