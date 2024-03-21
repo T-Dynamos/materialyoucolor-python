@@ -9,12 +9,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, macos-latest]
+        os: [windows-latest, macos-latest, macos-14]
         python-version: ['3.9', '3.10', '3.11', '3.12']
         dist: [bdist_wheel]
+        exclude:
+          - os: macos-14
+            python-version: '3.9'
     steps:
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Checkout code
