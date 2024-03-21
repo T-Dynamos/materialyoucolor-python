@@ -18,7 +18,7 @@ class ScoreOptions:
 
 
 SCORE_OPTION_DEFAULTS = ScoreOptions(
-    desired=4,  # 4 colors matches what Android wallpaper picker ,
+    desired=128,
     fallback_color_argb=0xFF4285F4,  # Google Blue.
     filter=True,  # Avoid unsuitable colors.
     dislike_filter=False,  # Fix globally disliked colors
