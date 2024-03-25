@@ -18,7 +18,7 @@ class ScoreOptions:
 
 
 SCORE_OPTION_DEFAULTS = ScoreOptions(
-    desired=128,
+    desired=4,
     fallback_color_argb=0xFF4285F4,  # Google Blue.
     filter=True,  # Avoid unsuitable colors.
     dislike_filter=False,  # Fix globally disliked colors
@@ -85,11 +85,9 @@ class Score:
             chroma_score = (hct.chroma - Score.TARGET_CHROMA) * chroma_weight
             score = proportion_score + chroma_score
             scored_hct.append({"hct": hct, "score": score})
-
-        scored_hct.sort(
-            key=lambda x: -1 if x["score"] > 0 else (1 if x["score"] < 0 else 0)
-        )
-
+        
+        scored_hct.sort(key=lambda x: x["score"] , reverse=True)
+        
         chosen_colors = []
         for difference_degrees_ in range(90, 14, -1):
             chosen_colors.clear()

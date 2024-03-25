@@ -87,7 +87,6 @@ for color in selected:
     )
 console.print(st)
 
-
 def print_scheme(scheme_function, name):
     print()
     schemes = [scheme_function(rgb) for rgb in selected]
