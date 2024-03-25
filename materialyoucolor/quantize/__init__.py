@@ -1,1 +1,0 @@
-from .celebi import QuantizeCelebi

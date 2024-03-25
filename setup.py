@@ -1,11 +1,12 @@
 import sys
+import os
 
 OPTIONS = ["PURE_PYTHON"]
 
 for option in OPTIONS:
     globals()[option] = False
     option_name = "--" + option.lower().replace("_", "-")
-    if option_name in sys.argv:
+    if option_name in sys.argv or "MYCP_" + option in os.environ:
         while option_name in sys.argv:
             sys.argv.remove(option_name)
         globals()[option] = True
@@ -143,7 +144,7 @@ class Pybind11Extension(_Extension):
         super().__init__(*args, **kwargs)
 
         # Include the installed package pybind11 headers
-        if False:# include_pybind11:
+        if False:  # include_pybind11:
             # If using setup_requires, this fails the first time - that's okay
             try:
                 import pybind11
@@ -511,6 +512,7 @@ class ParallelCompile:
     def __exit__(self, *args: Any) -> None:
         distutils.ccompiler.CCompiler.compile = self._old.pop()  # type: ignore[assignment]
 
+
 assert sys.version_info >= (3, 7, 0), "Materialyoucolor requires Python 3.7+"
 
 with open("README.md", "r") as f:
@@ -521,45 +523,114 @@ with open("materialyoucolor/__init__.py", "r") as file:
     VERSION = file.read().split("= ")[-1].split('"')[1].split('"')[0]
     file.close()
 
-FOLDER = "./materialyoucolor/quantize/"
-PATCH_FILE = "quantizer_cpp.patch"
-COMMIT = "1217346b9416e6e55c83c6e9295f6aed001e852e"
-URL = (
+
+def download_files(base_url, folder, file_map):
+    files_skipped = 0
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    if isinstance(file_map, list):
+        file_map = dict.fromkeys(file_map)
+
+    elif isinstance(file_map, set):
+        _file_map = {}
+        for _ in list(file_map):
+            _file_map[_] = _
+        file_map = _file_map
+
+    for file_url, save_path in file_map.items():
+        if not save_path:
+            save_path = os.path.basename(file_url)
+        if (
+            "/" in save_path
+            and (_path := os.path.join(folder, *save_path.split("/")[:-1]))
+            and not os.path.exists(_path)
+        ):
+            os.makedirs(_path)
+
+        file_name = os.path.join(folder, save_path)
+        if os.path.exists(file_name):
+            files_skipped += 1
+            continue
+        with open(file_name, "w") as write_buffer:
+            write_buffer.write(
+                urllib.request.urlopen(base_url + file_url).read().decode("utf-8")
+            )
+            write_buffer.close()
+            print("[Downloaded] :", file_name)
+
+    return len(file_map) != files_skipped
+
+
+# Download files from material foundation
+MCU_COMMIT = "1217346b9416e6e55c83c6e9295f6aed001e852e"
+MCU_URL = (
     "https://raw.githubusercontent.com/material-foundation/"
-    "material-color-utilities/{}/cpp/".format(COMMIT)
+    "material-color-utilities/{}/cpp/".format(MCU_COMMIT)
 )
-FILES = list(
-    "quantize/" + __
-    for __ in [
-        "wu.h",
-        "wu.cc",
-        "wsmeans.h",
-        "wsmeans.cc",
-        "lab.h",
-        "lab.cc",
-        "celebi.h",
-        "celebi.cc",
-    ]
-) + ["utils/utils.h", "utils/utils.cc"]
-    
-if all([os.path.isfile(os.path.join(FOLDER, os.path.basename(_))) for _ in FILES]) or PURE_PYTHON:
-    print("Skipping download...") if not PURE_PYTHON else print(
+MCU_FOLDER = "./materialyoucolor/quantize/"
+MCU_FILES = [
+    "quantize/wu.h",
+    "quantize/wu.cc",
+    "quantize/wsmeans.h",
+    "quantize/wsmeans.cc",
+    "quantize/lab.h",
+    "quantize/lab.cc",
+    "quantize/celebi.h",
+    "quantize/celebi.cc",
+    "utils/utils.h",
+    "utils/utils.cc",
+]
+PATCH_FILE = "quantizer_cpp.patch"
+
+# Download files from pybind11
+PYBIND_COMMIT = "ddb8b67a8aa8198ec8a028fb28f6870e44e7a467"
+PYBIND_URL = (
+    "https://raw.githubusercontent.com/pybind/pybind11/" "{}/include/pybind11/".format(
+        PYBIND_COMMIT
+    )
+)
+PYBIND_FOLDER = "./materialyoucolor/quantize/pybind11/"
+PYBIND_FILES = [
+    "cast.h",
+    "attr.h",
+    "buffer_info.h",
+    "gil_safe_call_once.h",
+    "options.h",
+    "typing.h",
+    "gil.h",
+    "pytypes.h",
+    "pybind11.h",
+    "stl.h",
+]
+PYBIND_EXTRA_FILES = {
+    "detail/type_caster_base.h",
+    "detail/init.h",
+    "detail/internals.h",
+    "detail/typeid.h",
+    "detail/descr.h",
+    "detail/common.h",
+    "detail/class.h",
+    "stl/filesystem.h",
+}
+
+if PURE_PYTHON:
+    print(
         "\nWarning: Skipping build of extension : `QuantizeCelebi`"
         "\nYou won't be able to use dominant color getting part.\n"
     )
 else:
-    print("Downloading required files...")
-    for file in FILES:
-        with open(os.path.join(FOLDER, os.path.basename(file)), "w") as write_buffer:
-            write_buffer.write(urllib.request.urlopen(URL + file).read().decode("utf-8"))
-            write_buffer.close()
-            print("[Downloaded] : " + file)
-
-    print("Applying patch : ", PATCH_FILE)
-    if os.system("patch --directory={} --strip=1 < {}".format(FOLDER, PATCH_FILE)) == 0:
-        print("Applied Successfully...")
-    else:
-        print("Failed!")
+    print("[Info]: Ensuring external files")
+    should_apply = download_files(MCU_URL, MCU_FOLDER, MCU_FILES)
+    download_files(PYBIND_URL, PYBIND_FOLDER, PYBIND_FILES)
+    download_files(PYBIND_URL, PYBIND_FOLDER, PYBIND_EXTRA_FILES)
+    if should_apply:
+        print("[Info]: Applying patch: ", PATCH_FILE)
+        os.system(
+            "patch --directory={} --strip=1 -N < {}".format(
+                "./materialyoucolor/quantize/", PATCH_FILE
+            )
+        )
 
 setup(
     name="materialyoucolor",
@@ -572,9 +643,13 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     exclude=["README.md", "*.pyc", "example.py"],
-    ext_modules=[ Pybind11Extension(
-        "materialyoucolor.quantize.celebi",
-        sorted(glob("materialyoucolor/quantize/*.cc")),
-        extra_compile_args=['-std=c++17'] if os.name != 'nt' else ['/std:c++17']
-        ) if not PURE_PYTHON else ()]
+    ext_modules=[
+        Pybind11Extension(
+            "materialyoucolor.quantize.celebi",
+            sorted(glob("materialyoucolor/quantize/*.cc")),
+            extra_compile_args=["-std=c++17"] if os.name != "nt" else ["/std:c++17"],
+        )
+        if not PURE_PYTHON
+        else ()
+    ],
 )
