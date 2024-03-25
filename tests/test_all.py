@@ -5,7 +5,7 @@ import requests
 from timeit import default_timer
 import sys
 from materialyoucolor.utils.color_utils import rgba_from_argb
-from materialyoucolor.quantize import QuantizeCelebi
+from materialyoucolor.quantize import QuantizeCelebi, StbLoadImage
 from materialyoucolor.score.score import Score
 from materialyoucolor.hct import Hct
 from materialyoucolor.dynamiccolor.material_dynamic_colors import MaterialDynamicColors
@@ -47,7 +47,11 @@ pixel_len = image.width * image.height
 image_data = image.getdata()
 pixel_array = [image_data[_] for _ in range(0, pixel_len, int(sys.argv[2]))]
 end = default_timer()
-print("File open took : ", end - start, "secs")
+print("File open took [pillow]: ", end - start, "secs")
+start = default_timer()
+pixel_array = StbLoadImage(FILENAME)
+end = default_timer()
+print("File open took [stb_image]: ", end - start, "secs")
 
 start = default_timer()
 colors = QuantizeCelebi(pixel_array, MAX_COLOR)

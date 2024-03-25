@@ -614,6 +614,13 @@ PYBIND_EXTRA_FILES = {
     "stl/filesystem.h",
 }
 
+# For stb_image backend
+STB_IMAGE_COMMIT = "ae721c50eaf761660b4f90cc590453cdb0c2acd0"
+STB_IMAGE_URL = (
+    "https://raw.githubusercontent.com/nothings"
+    "/stb/{}/".format(STB_IMAGE_COMMIT)
+)
+
 if PURE_PYTHON:
     print(
         "\nWarning: Skipping build of extension : `QuantizeCelebi`"
@@ -624,6 +631,13 @@ else:
     should_apply = download_files(MCU_URL, MCU_FOLDER, MCU_FILES)
     download_files(PYBIND_URL, PYBIND_FOLDER, PYBIND_FILES)
     download_files(PYBIND_URL, PYBIND_FOLDER, PYBIND_EXTRA_FILES)
+    download_files(STB_IMAGE_URL, MCU_FOLDER, ["stb_image.h"])
+    
+    # write __init__.py
+    with open(os.path.join(MCU_FOLDER, "__init__.py"), "w") as file:
+        file.write("from .celebi import QuantizeCelebi, StbLoadImage")
+        file.close()
+    
     if should_apply:
         print("[Info]: Applying patch: ", PATCH_FILE)
         os.system(
@@ -639,7 +653,6 @@ setup(
     author="Ansh Dadwal",
     author_email="anshdadwal298@gmail.com",
     packages=find_packages(),
-    install_requires=["pillow"],
     long_description=long_description,
     long_description_content_type="text/markdown",
     exclude=["README.md", "*.pyc", "example.py"],
