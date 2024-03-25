@@ -178,9 +178,9 @@ class MaterialDynamicColors:
         FromPaletteOptions(
             name="surface_container_lowest",
             palette=lambda s: s.neutral_palette,
-            tone=lambda s: 100
+            tone=lambda s: ContrastCurve(4, 4, 2, 0).get(s.contrast_level)
             if s.is_dark
-            else ContrastCurve(4, 4, 2, 0).get(s.contrast_level),
+            else 100,
             is_background=True,
         )
     )
