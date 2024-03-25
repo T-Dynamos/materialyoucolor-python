@@ -18,10 +18,10 @@ jobs:
       uses: actions/checkout@v2
     - name: Install dependencies
       run: |
-        /opt/python/cp39-cp39/bin/pip install --upgrade pip setuptools rich wheel requests
-        /opt/python/cp310-cp310/bin/pip install --upgrade pip setuptools rich wheel requests
-        /opt/python/cp311-cp311/bin/pip install --upgrade pip setuptools rich wheel requests
-        /opt/python/cp312-cp312/bin/pip install --upgrade pip setuptools rich wheel requests
+        /opt/python/cp39-cp39/bin/pip install --upgrade pip setuptools rich wheel requests pillow
+        /opt/python/cp310-cp310/bin/pip install --upgrade pip setuptools rich wheel requests pillow
+        /opt/python/cp311-cp311/bin/pip install --upgrade pip setuptools rich wheel requests pillow
+        /opt/python/cp312-cp312/bin/pip install --upgrade pip setuptools rich wheel requests pillow
     - name: Build wheel
       run: |
         /opt/python/cp39-cp39/bin/python setup.py bdist_wheel
