@@ -27,7 +27,7 @@ jobs:
         /opt/python/cp39-cp39/bin/python setup.py bdist_wheel
         /opt/python/cp310-cp310/bin/python setup.py bdist_wheel
         /opt/python/cp311-cp311/bin/python setup.py bdist_wheel
-        /opt/python/cp312-cp312/bin/python setup.py bdist_wheel
+        /opt/python/cp312-cp312/bin/python setup.py bdist_wheel sdist
     - name: Run tests
       run: |
         /opt/python/cp39-cp39/bin/pip install --find-links=dist materialyoucolor
@@ -42,7 +42,7 @@ jobs:
         
         /opt/python/cp39-cp39/bin/pip install auditwheel
         mkdir wheelhouse
-        rm -rf dist/*.tar.gz 
+        mv dist/*.tar.gz wheelhouse
         auditwheel repair dist/*
         echo "Built dists:"
         ls wheelhouse
