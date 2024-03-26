@@ -134,7 +134,7 @@ for color in vars(MaterialDynamicColors).keys():
 # Pillow is required to open image to array of pixels
 from PIL import Image
 # C++ QuantizeCelebi
-from materialyoucolor.quantize import QuantizeCelebi
+from materialyoucolor.quantize import QuantizeCelebi, StbLoadImage
 # Material You's default scoring of colors
 from materialyoucolor.score.score import Score
 
@@ -142,6 +142,11 @@ from materialyoucolor.score.score import Score
 image = Image.open("path_to_some_image.jpg")
 pixel_len = image.width * image.height
 image_data = image.getdata()
+
+# Alternate method
+# image_data = StbLoadImage("path_to_some_image.jpg")
+# Warning: This method is slower and much more resource intensive
+# (eats too much ram) so use it with caution
 
 # Quality 1 means skip no pixels
 quality = 1
