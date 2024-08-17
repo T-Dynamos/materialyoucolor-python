@@ -29,8 +29,9 @@ except:
     QuantizeCelebi = None
 
 autoclass = None
+_is_android = "ANDROID_ARGUMENT" in os.environ
 
-try:
+if _is_android:
     from jnius import autoclass
     from android import mActivity
 
@@ -38,8 +39,6 @@ try:
     BuildVERSION = autoclass("android.os.Build$VERSION")
     context = mActivity.getApplicationContext()
     WallpaperManager = autoclass("android.app.WallpaperManager").getInstance(mActivity)
-except Exception:
-    pass
 
 try:
     from PIL import Image
@@ -71,16 +70,6 @@ APPROX_CHROMA = 50
 DEFAULT_RESIZE_BITMAP_AREA = 112 * 112
 
 WALLPAPER_CACHE = {}
-
-
-def _is_android() -> bool:
-    try:
-        from android import mActivity
-
-        return True
-    except Exception as e:
-        pass
-    return False
 
 
 def save_and_resize_bitmap(drawable, path):
@@ -217,11 +206,10 @@ def get_dynamic_scheme(
 ) -> DynamicScheme:
     logger = lambda message: message_logger(logger_head + " : " + message)
 
-    is_android = _is_android()
     selected_scheme = None
     selected_color = None
 
-    if is_android:
+    if _is_android:
         # For Android 12 and 12+
         if BuildVERSION.SDK_INT >= 31:
             selected_scheme = _get_android_12_above(
@@ -297,7 +285,7 @@ def get_dynamic_scheme(
         # TODO: Think about getting data from bitmap
         pixel_array = [
             image_data[_]
-            for _ in range(0, pixel_len, dynamic_color_quality if not is_android else 1)
+            for _ in range(0, pixel_len, dynamic_color_quality if not _is_android else 1)
         ]
         logger(
             f"Created an array of pixels from a "
