@@ -7,7 +7,7 @@ from materialyoucolor.utils.math_utils import sanitize_degrees_double
 class DynamicSchemeOptions:
     def __init__(
         self,
-        source_color_argb: int,
+        source_color_hct: Hct,
         variant: Variant,
         contrast_level: int,
         is_dark: bool,
@@ -16,8 +16,10 @@ class DynamicSchemeOptions:
         tertiary_palette: TonalPalette,
         neutral_palette: TonalPalette,
         neutral_variant_palette: TonalPalette,
+        error_palette: TonalPalette = None,
     ):
-        self.source_color_argb = source_color_argb
+        self.source_color_argb = source_color_hct.to_int()
+        self.source_color_hct = source_color_hct
         self.variant = variant
         self.contrast_level = contrast_level
         self.is_dark = is_dark
@@ -26,6 +28,7 @@ class DynamicSchemeOptions:
         self.tertiary_palette = tertiary_palette
         self.neutral_palette = neutral_palette
         self.neutral_variant_palette = neutral_variant_palette
+        self.error_palette = error_palette
 
 
 class DynamicScheme:
@@ -34,13 +37,14 @@ class DynamicScheme:
         self.variant = args.variant
         self.contrast_level = args.contrast_level
         self.is_dark = args.is_dark
-        self.source_color_hct = Hct.from_int(args.source_color_argb)
+        self.source_color_hct = args.source_color_hct
         self.primary_palette = args.primary_palette
         self.secondary_palette = args.secondary_palette
         self.tertiary_palette = args.tertiary_palette
         self.neutral_palette = args.neutral_palette
         self.neutral_variant_palette = args.neutral_variant_palette
-        self.error_palette = TonalPalette.from_hue_and_chroma(25.0, 84.0)
+        if args.error_palette is None:
+            self.error_palette = TonalPalette.from_hue_and_chroma(25.0, 84.0)
 
     @staticmethod
     def get_rotated_hue(source_color, hues, rotations):

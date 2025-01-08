@@ -285,7 +285,9 @@ def get_dynamic_scheme(
         # TODO: Think about getting data from bitmap
         pixel_array = [
             image_data[_]
-            for _ in range(0, pixel_len, dynamic_color_quality if not _is_android else 1)
+            for _ in range(
+                0, pixel_len, dynamic_color_quality if not _is_android else 1
+            )
         ]
         logger(
             f"Created an array of pixels from a "

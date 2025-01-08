@@ -85,9 +85,9 @@ class Score:
             chroma_score = (hct.chroma - Score.TARGET_CHROMA) * chroma_weight
             score = proportion_score + chroma_score
             scored_hct.append({"hct": hct, "score": score})
-        
-        scored_hct.sort(key=lambda x: x["score"] , reverse=True)
-        
+
+        scored_hct.sort(key=lambda x: x["score"], reverse=True)
+
         chosen_colors = []
         for difference_degrees_ in range(90, 14, -1):
             chosen_colors.clear()
@@ -109,9 +109,9 @@ class Score:
 
         if dislike_filter:
             for chosen_hct in chosen_colors:
-                chosen_colors[
-                    chosen_colors.index(chosen_hct)
-                ] = DislikeAnalyzer.fix_if_disliked(chosen_hct)
+                chosen_colors[chosen_colors.index(chosen_hct)] = (
+                    DislikeAnalyzer.fix_if_disliked(chosen_hct)
+                )
         for chosen_hct in chosen_colors:
             colors.append(chosen_hct.to_int())
         return colors

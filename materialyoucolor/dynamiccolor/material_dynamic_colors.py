@@ -40,7 +40,7 @@ def find_desired_chroma_by_tone(
     return answer
 
 
-def find_desired_tone_for_sec(s):
+def secondary_container_tone(s):
     initial_tone = 30 if s.is_dark else 90
     if is_monochrome(s):
         return 30 if s.is_dark else 85
@@ -51,6 +51,16 @@ def find_desired_tone_for_sec(s):
         s.secondary_palette.chroma,
         initial_tone,
         False if s.is_dark else True,
+    )
+
+
+def on_secondary_container_tone(s):
+    if is_monochrome(s):
+        return 90 if s.is_dark else 10
+    if not is_fidelity(s):
+        return 90 if s.is_dark else 30
+    return DynamicColor.foreground_tone(
+        MaterialDynamicColors.secondaryContainer.tone(s), 4.5
     )
 
 
@@ -67,7 +77,7 @@ def on_tertiary_container_tone(s):
     if not is_monochrome(s):
         return 0 if s.is_dark else 100
     if not is_fidelity(s):
-        return 90 if s.is_dark else 10
+        return 90 if s.is_dark else 30
     return DynamicColor.foreground_tone(
         MaterialDynamicColors.tertiaryContainer.tone(s), 4.5
     )
@@ -156,9 +166,9 @@ class MaterialDynamicColors:
         FromPaletteOptions(
             name="surface_dim",
             palette=lambda s: s.neutral_palette,
-            tone=lambda s: 6
-            if s.is_dark
-            else ContrastCurve(87, 87, 80, 75).get(s.contrast_level),
+            tone=lambda s: (
+                6 if s.is_dark else ContrastCurve(87, 87, 80, 75).get(s.contrast_level)
+            ),
             is_background=True,
         )
     )
@@ -167,9 +177,9 @@ class MaterialDynamicColors:
         FromPaletteOptions(
             name="surface_bright",
             palette=lambda s: s.neutral_palette,
-            tone=lambda s: ContrastCurve(24, 24, 29, 34).get(s.contrast_level)
-            if s.is_dark
-            else 98,
+            tone=lambda s: (
+                ContrastCurve(24, 24, 29, 34).get(s.contrast_level) if s.is_dark else 98
+            ),
             is_background=True,
         )
     )
@@ -178,9 +188,9 @@ class MaterialDynamicColors:
         FromPaletteOptions(
             name="surface_container_lowest",
             palette=lambda s: s.neutral_palette,
-            tone=lambda s: ContrastCurve(4, 4, 2, 0).get(s.contrast_level)
-            if s.is_dark
-            else 100,
+            tone=lambda s: (
+                ContrastCurve(4, 4, 2, 0).get(s.contrast_level) if s.is_dark else 100
+            ),
             is_background=True,
         )
     )
@@ -189,9 +199,11 @@ class MaterialDynamicColors:
         FromPaletteOptions(
             name="surface_container_low",
             palette=lambda s: s.neutral_palette,
-            tone=lambda s: ContrastCurve(10, 10, 11, 12).get(s.contrast_level)
-            if s.is_dark
-            else ContrastCurve(96, 96, 96, 95).get(s.contrast_level),
+            tone=lambda s: (
+                ContrastCurve(10, 10, 11, 12).get(s.contrast_level)
+                if s.is_dark
+                else ContrastCurve(96, 96, 96, 95).get(s.contrast_level)
+            ),
             is_background=True,
         )
     )
@@ -200,9 +212,11 @@ class MaterialDynamicColors:
         FromPaletteOptions(
             name="surface_container",
             palette=lambda s: s.neutral_palette,
-            tone=lambda s: ContrastCurve(12, 12, 16, 20).get(s.contrast_level)
-            if s.is_dark
-            else ContrastCurve(94, 94, 92, 90).get(s.contrast_level),
+            tone=lambda s: (
+                ContrastCurve(12, 12, 16, 20).get(s.contrast_level)
+                if s.is_dark
+                else ContrastCurve(94, 94, 92, 90).get(s.contrast_level)
+            ),
             is_background=True,
         )
     )
@@ -211,9 +225,11 @@ class MaterialDynamicColors:
         FromPaletteOptions(
             name="surface_container_high",
             palette=lambda s: s.neutral_palette,
-            tone=lambda s: ContrastCurve(17, 17, 21, 25).get(s.contrast_level)
-            if s.is_dark
-            else ContrastCurve(92, 92, 88, 85).get(s.contrast_level),
+            tone=lambda s: (
+                ContrastCurve(17, 17, 21, 25).get(s.contrast_level)
+                if s.is_dark
+                else ContrastCurve(92, 92, 88, 85).get(s.contrast_level)
+            ),
             is_background=True,
         )
     )
@@ -222,9 +238,11 @@ class MaterialDynamicColors:
         FromPaletteOptions(
             name="surface_container_highest",
             palette=lambda s: s.neutral_palette,
-            tone=lambda s: ContrastCurve(22, 22, 26, 30).get(s.contrast_level)
-            if s.is_dark
-            else ContrastCurve(90, 90, 84, 80).get(s.contrast_level),
+            tone=lambda s: (
+                ContrastCurve(22, 22, 26, 30).get(s.contrast_level)
+                if s.is_dark
+                else ContrastCurve(90, 90, 84, 80).get(s.contrast_level)
+            ),
             is_background=True,
         )
     )
@@ -353,9 +371,11 @@ class MaterialDynamicColors:
         FromPaletteOptions(
             name="primary_container",
             palette=lambda s: s.primary_palette,
-            tone=lambda s: s.source_color_hct.tone
-            if is_fidelity(s)
-            else (85 if is_monochrome(s) else (30 if s.is_dark else 90)),
+            tone=lambda s: (
+                s.source_color_hct.tone
+                if is_fidelity(s)
+                else (85 if is_monochrome(s) else (30 if s.is_dark else 90))
+            ),
             is_background=True,
             background=lambda s: MaterialDynamicColors.highestSurface(s),
             contrast_curve=ContrastCurve(1, 1, 3, 4.5),
@@ -373,13 +393,15 @@ class MaterialDynamicColors:
         FromPaletteOptions(
             name="on_primary_container",
             palette=lambda s: s.primary_palette,
-            tone=lambda s: DynamicColor.foreground_tone(
-                MaterialDynamicColors.primaryContainer.tone(s), 4.5
-            )
-            if is_fidelity(s)
-            else (0 if is_monochrome(s) else (90 if s.is_dark else 10)),
+            tone=lambda s: (
+                DynamicColor.foreground_tone(
+                    MaterialDynamicColors.primaryContainer.tone(s), 4.5
+                )
+                if is_fidelity(s)
+                else (0 if is_monochrome(s) else (90 if s.is_dark else 30))
+            ),
             background=lambda s: MaterialDynamicColors.primaryContainer,
-            contrast_curve=ContrastCurve(4.5, 7, 11, 21),
+            contrast_curve=ContrastCurve(3, 4.5, 7, 11),
         )
     )
 
@@ -425,7 +447,7 @@ class MaterialDynamicColors:
         FromPaletteOptions(
             name="secondary_container",
             palette=lambda s: s.secondary_palette,
-            tone=lambda s: find_desired_tone_for_sec(s),
+            tone=lambda s: secondary_container_tone(s),
             is_background=True,
             background=lambda s: MaterialDynamicColors.highestSurface(s),
             contrast_curve=ContrastCurve(1, 1, 3, 4.5),
@@ -443,13 +465,9 @@ class MaterialDynamicColors:
         FromPaletteOptions(
             name="on_secondary_container",
             palette=lambda s: s.secondary_palette,
-            tone=lambda s: (90 if s.is_dark else 10)
-            if not is_fidelity(s)
-            else DynamicColor.foreground_tone(
-                MaterialDynamicColors.secondaryContainer.tone(s), 4.5
-            ),
+            tone=lambda s: on_secondary_container_tone(s),
             background=lambda s: MaterialDynamicColors.secondaryContainer,
-            contrast_curve=ContrastCurve(4.5, 7, 11, 21),
+            contrast_curve=ContrastCurve(3.0, 4.5, 7, 11),
         )
     )
 
@@ -457,9 +475,11 @@ class MaterialDynamicColors:
         FromPaletteOptions(
             name="tertiary",
             palette=lambda s: s.tertiary_palette,
-            tone=lambda s: (90 if s.is_dark else 25)
-            if is_monochrome(s)
-            else (80 if s.is_dark else 40),
+            tone=lambda s: (
+                (90 if s.is_dark else 25)
+                if is_monochrome(s)
+                else (80 if s.is_dark else 40)
+            ),
             is_background=True,
             background=lambda s: MaterialDynamicColors.highestSurface(s),
             contrast_curve=ContrastCurve(3, 4.5, 7, 7),
@@ -477,9 +497,11 @@ class MaterialDynamicColors:
         FromPaletteOptions(
             name="on_tertiary",
             palette=lambda s: s.tertiary_palette,
-            tone=lambda s: (10 if s.is_dark else 90)
-            if is_monochrome(s)
-            else (20 if s.is_dark else 100),
+            tone=lambda s: (
+                (10 if s.is_dark else 90)
+                if is_monochrome(s)
+                else (20 if s.is_dark else 100)
+            ),
             background=lambda s: MaterialDynamicColors.tertiary,
             contrast_curve=ContrastCurve(4.5, 7, 11, 21),
         )
@@ -509,7 +531,7 @@ class MaterialDynamicColors:
             palette=lambda s: s.tertiary_palette,
             tone=lambda s: on_tertiary_container_tone(s),
             background=lambda s: MaterialDynamicColors.tertiaryContainer,
-            contrast_curve=ContrastCurve(4.5, 7, 11, 21),
+            contrast_curve=ContrastCurve(3.0, 4.5, 7, 11),
         )
     )
 
@@ -563,9 +585,9 @@ class MaterialDynamicColors:
         FromPaletteOptions(
             name="on_error_container",
             palette=lambda s: s.error_palette,
-            tone=lambda s: 90 if s.is_dark else 10,
+            tone=lambda s: 90 if s.is_dark else (10 if is_monochrome(s) else 30),
             background=lambda s: MaterialDynamicColors.errorContainer,
-            contrast_curve=ContrastCurve(4.5, 7, 11, 21),
+            contrast_curve=ContrastCurve(3.0, 4.5, 7, 11),
         )
     )
 

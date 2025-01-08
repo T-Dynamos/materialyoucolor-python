@@ -8,7 +8,7 @@ class SchemeRainbow(DynamicScheme):
     def __init__(self, source_color_hct, is_dark, contrast_level):
         super().__init__(
             DynamicSchemeOptions(
-                source_color_argb=source_color_hct.to_int(),
+                source_color_hct=source_color_hct,
                 variant=Variant.RAINBOW,
                 contrast_level=contrast_level,
                 is_dark=is_dark,

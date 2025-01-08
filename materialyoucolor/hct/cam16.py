@@ -67,9 +67,7 @@ class Cam16:
         hue = (
             atan_degrees + 360.0
             if atan_degrees < 0
-            else atan_degrees
-            if atan_degrees >= 360
-            else atan_degrees
+            else atan_degrees if atan_degrees >= 360 else atan_degrees
         )
         hue_radians = (hue * math.pi) / 180.0
 
@@ -227,9 +225,7 @@ class Cam16:
         hue = (
             atan_degrees + 360.0
             if atan_degrees < 0
-            else atan_degrees - 360.0
-            if atan_degrees >= 360
-            else atan_degrees
+            else atan_degrees - 360.0 if atan_degrees >= 360 else atan_degrees
         )
         hue_radians = hue * math.pi / 180.0
 

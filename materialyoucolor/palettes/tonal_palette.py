@@ -3,6 +3,52 @@ from materialyoucolor.utils.color_utils import rgba_from_argb
 from materialyoucolor.utils.color_utils import argb_from_rgb
 
 
+class KeyColor:
+    def __init__(self, hue: float, requested_chroma: float):
+        self.chroma_cache = {}
+        self.max_chroma_value = 200.0
+        self.hue = hue
+        self.requested_chroma = requested_chroma
+
+    def create(self):
+        pivot_tone = 50
+        tone_step_size = 1
+        epsilon = 0.01
+        lower_tone = 0
+        upper_tone = 100
+        while lower_tone < upper_tone:
+            mid_tone = (lower_tone + upper_tone) // 2
+            is_ascending = self.max_chroma(mid_tone) < self.max_chroma(
+                mid_tone + tone_step_size
+            )
+            sufficient_chroma = (
+                self.max_chroma(mid_tone) >= self.requested_chroma - epsilon
+            )
+
+            if sufficient_chroma:
+                if abs(lower_tone - pivot_tone) < abs(upper_tone - pivot_tone):
+                    upper_tone = mid_tone
+                else:
+                    if lower_tone == mid_tone:
+                        return Hct.from_hct(self.hue, self.requested_chroma, lower_tone)
+                    lower_tone = mid_tone
+            else:
+                if is_ascending:
+                    lower_tone = mid_tone + tone_step_size
+                else:
+                    upper_tone = mid_tone
+
+        return Hct.from_hct(self.hue, self.requested_chroma, lower_tone)
+
+    def max_chroma(self, tone: int) -> float:
+        if tone in self.chroma_cache:
+            return self.chroma_cache[tone]
+
+        chroma = Hct.from_hct(self.hue, self.max_chroma_value, tone).chroma
+        self.chroma_cache[tone] = chroma
+        return chroma
+
+
 class TonalPalette:
     def __init__(self, hue, chroma, key_color):
         self.hue = hue
@@ -21,31 +67,8 @@ class TonalPalette:
 
     @staticmethod
     def from_hue_and_chroma(hue: float, chroma: float):
-        return TonalPalette(hue, chroma, TonalPalette.create_key_color(hue, chroma))
-
-    @staticmethod
-    def create_key_color(hue: float, chroma: float) -> Hct:
-        start_tone = 50.0
-        smallest_delta_hct = Hct.from_hct(hue, chroma, start_tone)
-        smallest_delta = abs(smallest_delta_hct.chroma - chroma)
-
-        for delta in range(1, 50):
-            if round(chroma) == round(smallest_delta_hct.chroma):
-                return smallest_delta_hct
-
-            hct_add = Hct.from_hct(hue, chroma, start_tone + delta)
-            hct_add_delta = abs(hct_add.chroma - chroma)
-            if hct_add_delta < smallest_delta:
-                smallest_delta = hct_add_delta
-                smallest_delta_hct = hct_add
-
-            hct_subtract = Hct.from_hct(hue, chroma, start_tone - delta)
-            hct_subtract_delta = abs(hct_subtract.chroma - chroma)
-            if hct_subtract_delta < smallest_delta:
-                smallest_delta = hct_subtract_delta
-                smallest_delta_hct = hct_subtract
-
-        return smallest_delta_hct
+        key_color = KeyColor(hue, chroma).create()
+        return TonalPalette(hue, chroma, key_color)
 
     def tone(self, tone: float) -> int:
         argb = self.cache.get(tone)
