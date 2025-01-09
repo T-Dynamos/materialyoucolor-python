@@ -18,7 +18,7 @@ jobs:
         curl -L -o test_image.jpg "https://unsplash.com/photos/zQLd8RXbenw/download?ixid=M3wxMjA3fDB8MXx0b3BpY3x8NnNNVmpUTFNrZVF8fHx8fDJ8fDE3MzY0MDA3NTd8&force=true&w=2400"
     - name: Setup, Build, Test and Audit
       run: |
-        python_versions=("cp39" "cp310" "cp311" "cp312" "cp313")
+        python_versions=("cp310" "cp311" "cp312" "cp313" "cp39")
         for version in "${python_versions[@]}"; do
           
           /opt/python/$version-$version/bin/pip install --upgrade pip setuptools rich wheel requests pillow
@@ -39,10 +39,10 @@ jobs:
         done
 
     - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.5.0
+      uses: pypa/gh-action-pypi-publish@v1.12.3
       if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
       with:
         user: __token__
         password: ${{ secrets.PYPI_TOKEN }}
-        packages_dir: wheelhouse
-
+        packages-dir: wheelhouse
+        skip-existing: true

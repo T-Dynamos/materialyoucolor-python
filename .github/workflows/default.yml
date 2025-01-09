@@ -12,9 +12,6 @@ jobs:
         os: [windows-latest, macos-latest, macos-14]
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
         dist: [bdist_wheel]
-        exclude:
-          - os: macos-14
-            python-version: '3.9'
     steps:
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -37,26 +34,34 @@ jobs:
         pip install --find-links=dist materialyoucolor --no-index
         python tests/test_all.py test_image.jpg 1
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: dist
+        name: "artifact-cp${{ matrix.python-version }}-${{ matrix.os }}.tar.gz"
         path: dist
   deploy:
     name: Publish to PyPI
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, macos-14]
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
     steps:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Download artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
-        name: dist
+        name: "artifact-cp${{ matrix.python-version }}-${{ matrix.os }}.tar.gz"
         path: dist
     - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.5.0
+      uses: pypa/gh-action-pypi-publish@v1.12.3
       with:
         user: __token__
         password: ${{ secrets.PYPI_TOKEN }}
-        packages_dir: dist/
+        skip-existing: true
+        packages-dir: dist/
+    - uses: geekyeggo/delete-artifact@v5
+      with:
+          name: "artifact-cp${{ matrix.python-version }}-${{ matrix.os }}.tar.gz"
