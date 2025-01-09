@@ -134,7 +134,7 @@ for color in vars(MaterialDynamicColors).keys():
 # Pillow is required to open image to array of pixels
 from PIL import Image
 # C++ QuantizeCelebi
-from materialyoucolor.quantize import QuantizeCelebi, StbLoadImage
+from materialyoucolor.quantize import QuantizeCelebi, ImageQuantizeCelebi
 # Material You's default scoring of colors
 from materialyoucolor.score.score import Score
 
@@ -143,17 +143,17 @@ image = Image.open("path_to_some_image.jpg")
 pixel_len = image.width * image.height
 image_data = image.getdata()
 
-# Alternate method
-# image_data = StbLoadImage("path_to_some_image.jpg")
-# Warning: This method is slower and much more resource intensive
-# (eats too much ram) so use it with caution
-
 # Quality 1 means skip no pixels
 quality = 1
 pixel_array = [image_data[_] for _ in range(0, pixel_len, quality)]
 
 # Run algorithm
 result = QuantizeCelebi(pixel_array, 128) # 128 -> number desired colors, default 128
+
+# Alternate C++ method
+# this is generally faster, but gives less control over image
+# result = ImageQuantizeCelebi("path_to_some_image.jpg", quality, 128)
+
 print(result)
 # {4278722365: 2320, 4278723396: 2405, 4278723657: 2366,...
 # result is a dict where key is
