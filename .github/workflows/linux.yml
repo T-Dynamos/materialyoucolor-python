@@ -10,42 +10,34 @@ jobs:
     container:
       image: quay.io/pypa/manylinux_2_28_x86_64
     steps:
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
     - name: Checkout code
       uses: actions/checkout@v2
-    - name: Install dependencies
+    - name: Download test image file
       run: |
-        /opt/python/cp39-cp39/bin/pip install --upgrade pip setuptools rich wheel requests pillow
-        /opt/python/cp310-cp310/bin/pip install --upgrade pip setuptools rich wheel requests pillow
-        /opt/python/cp311-cp311/bin/pip install --upgrade pip setuptools rich wheel requests pillow
-        /opt/python/cp312-cp312/bin/pip install --upgrade pip setuptools rich wheel requests pillow
-    - name: Build wheel
+        # Photo by Dillon Hunt (https://unsplash.com/@dillon_hunt) on https://unsplash.com/photos/an-aerial-view-of-the-ocean-and-rocks-zQLd8RXbenw 
+        curl -L -o test_image.jpg "https://unsplash.com/photos/zQLd8RXbenw/download?ixid=M3wxMjA3fDB8MXx0b3BpY3x8NnNNVmpUTFNrZVF8fHx8fDJ8fDE3MzY0MDA3NTd8&force=true&w=2400"
+    - name: Setup, Build, Test and Audit
       run: |
-        /opt/python/cp39-cp39/bin/python setup.py bdist_wheel
-        /opt/python/cp310-cp310/bin/python setup.py bdist_wheel
-        /opt/python/cp311-cp311/bin/python setup.py bdist_wheel
-        /opt/python/cp312-cp312/bin/python setup.py bdist_wheel sdist
-    - name: Run tests
-      run: |
-        /opt/python/cp39-cp39/bin/pip install --find-links=dist materialyoucolor
-        /opt/python/cp310-cp310/bin/pip install --find-links=dist materialyoucolor
-        /opt/python/cp311-cp311/bin/pip install --find-links=dist materialyoucolor
-        /opt/python/cp312-cp312/bin/pip install --find-links=dist materialyoucolor
+        python_versions=("cp39" "cp310" "cp311" "cp312" "cp313")
+        for version in "${python_versions[@]}"; do
+          
+          /opt/python/$version-$version/bin/pip install --upgrade pip setuptools rich wheel requests pillow
+          /opt/python/$version-$version/bin/python setup.py bdist_wheel
+          /opt/python/$version-$version/bin/pip install --find-links=dist materialyoucolor --no-index
+          /opt/python/$version-$version/bin/python tests/test_all.py test_image.jpg 1 &> /dev/null
 
-        /opt/python/cp39-cp39/bin/python tests/test_all.py test_image.jpg 1
-        /opt/python/cp310-cp310/bin/python tests/test_all.py test_image.jpg 1
-        /opt/python/cp311-cp311/bin/python tests/test_all.py test_image.jpg 1
-        /opt/python/cp312-cp312/bin/python tests/test_all.py test_image.jpg 1
-        
-        /opt/python/cp39-cp39/bin/pip install auditwheel
-        mkdir wheelhouse
-        mv dist/*.tar.gz wheelhouse
-        auditwheel repair dist/*
-        echo "Built dists:"
-        ls wheelhouse
+          if [ "$version" == "cp39" ]; then
+            /opt/python/$version-$version/bin/python setup.py sdist
+            /opt/python/$version-$version/bin/pip install auditwheel
+            mkdir wheelhouse
+            mv dist/*.tar.gz wheelhouse
+            auditwheel repair dist/*
+            echo "Built dists for Python $version:"
+            ls wheelhouse
+          fi
+
+        done
+
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@v1.5.0
       if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
@@ -53,3 +45,4 @@ jobs:
         user: __token__
         password: ${{ secrets.PYPI_TOKEN }}
         packages_dir: wheelhouse
+

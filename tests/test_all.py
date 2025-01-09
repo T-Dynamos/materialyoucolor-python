@@ -28,24 +28,12 @@ from PIL import Image
 
 rgba_to_hex = lambda rgba: "#{:02X}{:02X}{:02X}{:02X}".format(*map(round, rgba))
 
-FILENAME = sys.argv[1]
-
-if not os.path.isfile(FILENAME):
-    print("Downloading test image file: ")
-    with open(FILENAME, "wb") as file:
-        file.write(
-            requests.get(
-                "https://unsplash.com/photos/u9tAl8WR3DI/download?ixid=M3wxMjA3fDB8MXx0b3BpY3x8NnNNVmpUTFNrZVF8fHx8fDJ8fDE3MDUyMDgwNjF8&force=true"
-            ).content
-        )
-    print("Downloaded: ", FILENAME, os.path.exists(FILENAME))
-
 console = Console()
 quality = int(sys.argv[2])
 
 ########### PILLOW METHOD #############
 start = default_timer()
-image = Image.open(FILENAME)
+image = Image.open(sys.argv[1])
 pixel_len = image.width * image.height
 image_data = image.getdata()
 # start = default_timer()
@@ -57,7 +45,7 @@ print(f"Color[pillow] generation took {end-start:.4f} secs")
 ########## C++ Method ##########
 start = default_timer()
 # loading using c++ method
-colors = ImageQuantizeCelebi(FILENAME, quality, MAX_COLOR)
+colors = ImageQuantizeCelebi(sys.argv[1], quality, MAX_COLOR)
 end = default_timer()
 print(f"Color[stb_image] generation took {end-start:.4f} secs")
 ######################
@@ -93,8 +81,6 @@ for color in selected:
         str(colors[color]),
     )
 console.print(st)
-
-exit()
 
 def print_scheme(scheme_function, name):
     print()

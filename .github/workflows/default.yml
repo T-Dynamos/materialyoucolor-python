@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, macos-latest, macos-14]
-        python-version: ['3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
         dist: [bdist_wheel]
         exclude:
           - os: macos-14
@@ -22,6 +22,10 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Checkout code
       uses: actions/checkout@v2
+    - name: Download test image file
+      run: |
+        # Photo by Dillon Hunt (https://unsplash.com/@dillon_hunt) on https://unsplash.com/photos/an-aerial-view-of-the-ocean-and-rocks-zQLd8RXbenw 
+        curl -L -o test_image.jpg "https://unsplash.com/photos/zQLd8RXbenw/download?ixid=M3wxMjA3fDB8MXx0b3BpY3x8NnNNVmpUTFNrZVF8fHx8fDJ8fDE3MzY0MDA3NTd8&force=true&w=2400"
     - name: Install dependencies
       run: |
         pip install --upgrade pip setuptools rich  wheel requests pillow
@@ -30,7 +34,7 @@ jobs:
         python setup.py ${{ matrix.dist }}
     - name: Run tests
       run: |
-        pip install --find-links=dist materialyoucolor
+        pip install --find-links=dist materialyoucolor --no-index
         python tests/test_all.py test_image.jpg 1
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
