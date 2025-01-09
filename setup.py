@@ -635,7 +635,7 @@ else:
     
     # write __init__.py
     with open(os.path.join(MCU_FOLDER, "__init__.py"), "w") as file:
-        file.write("from .celebi import QuantizeCelebi, StbLoadImage")
+        file.write("from .celebi import QuantizeCelebi, ImageQuantizeCelebi")
         file.close()
     
     if should_apply:

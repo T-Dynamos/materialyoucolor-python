@@ -3,9 +3,11 @@ MAX_COLOR = 128
 import os
 import requests
 from timeit import default_timer
+import gc
 import sys
+import time
 from materialyoucolor.utils.color_utils import rgba_from_argb
-from materialyoucolor.quantize import QuantizeCelebi, StbLoadImage
+from materialyoucolor.quantize import QuantizeCelebi, ImageQuantizeCelebi
 from materialyoucolor.score.score import Score
 from materialyoucolor.hct import Hct
 from materialyoucolor.dynamiccolor.material_dynamic_colors import MaterialDynamicColors
@@ -39,27 +41,28 @@ if not os.path.isfile(FILENAME):
     print("Downloaded: ", FILENAME, os.path.exists(FILENAME))
 
 console = Console()
+quality = int(sys.argv[2])
 
+########### PILLOW METHOD #############
 start = default_timer()
 image = Image.open(FILENAME)
-
 pixel_len = image.width * image.height
 image_data = image.getdata()
-pixel_array = [image_data[_] for _ in range(0, pixel_len, int(sys.argv[2]))]
+# start = default_timer()
+colors = QuantizeCelebi([image_data[i] for i in range(0, pixel_len, quality)], MAX_COLOR)
 end = default_timer()
-print("File open took [pillow]: ", end - start, "secs")
-start = default_timer()
-pixel_array = StbLoadImage(FILENAME)
-end = default_timer()
-print("File open took [stb_image]: ", end - start, "secs")
+print(f"Color[pillow] generation took {end-start:.4f} secs")
+##############################
 
+########## C++ Method ##########
 start = default_timer()
-colors = QuantizeCelebi(pixel_array, MAX_COLOR)
+# loading using c++ method
+colors = ImageQuantizeCelebi(FILENAME, quality, MAX_COLOR)
+end = default_timer()
+print(f"Color[stb_image] generation took {end-start:.4f} secs")
+######################
+
 selected = Score.score(colors)
-end = default_timer()
-
-print("Color generation took : ", end - start, "secs\n")
-
 
 if os.name == "nt":
     # UnicodeEncodeError: 'charmap' codec can't encode characters in position 0-5: character maps to <undefined>
@@ -90,6 +93,8 @@ for color in selected:
         str(colors[color]),
     )
 console.print(st)
+
+exit()
 
 def print_scheme(scheme_function, name):
     print()

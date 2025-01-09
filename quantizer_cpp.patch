@@ -171,9 +171,9 @@ diff '--color=auto' -uNr patch/wu.h materialyoucolor/quantize/wu.h
  
  namespace material_color_utilities {
  
---- patch/celebi.cc	2024-03-25 23:22:50.123427023 +0530
-+++ materialyoucolor/quantize/celebi.cc	2024-03-25 23:20:03.277959473 +0530
-@@ -14,47 +14,78 @@
+--- materialyoucolor/quantize/celebi.cc	2025-01-09 12:10:34.733592839 +0530
++++ patch/celebi.cc	2025-01-09 11:57:06.090837655 +0530
+@@ -14,47 +14,81 @@
   * limitations under the License.
   */
  
@@ -244,35 +244,38 @@ diff '--color=auto' -uNr patch/wu.h materialyoucolor/quantize/wu.h
 +  
 +  return result.color_to_count;
 +}
-+ 
  
 -  return result;
-+std::vector<std::vector<int>> StbLoadImage(const char* image_path) {
++
++std::map<uint32_t, uint32_t>  ImageQuantizeCelebi(const char* image_path, const int quality,  int max_colors) {
 +    int width, height, channels;
 +    std::vector<std::vector<int>> pixel_array = {};
-+    // Load the actual image
 +    unsigned char* pixel_result = stbi_load(image_path, &width, &height, &channels, 4);
-+    if (!pixel_result) {return pixel_array;}
-+
-+    pixel_array.reserve(width * height);
++    if (!pixel_result) {return QuantizeCelebi(pixel_array, max_colors);}
++    pixel_array.reserve( (width * height) / quality );
 +    unsigned char* pixel_position;
-+    
++    int _quality = quality;
 +    for (int y = 0; y < height; ++y) {
-+        for (int x = 0; x < width; ++x) {
++        for (int x = 0; x < width; x = x+_quality) {
 +            pixel_position = pixel_result + (x + y * width) * 4;
 +            std::vector<int> current_color = {
 +              pixel_position[0], pixel_position[1], pixel_position[2]};
 +            if (channels > 3) {current_color.push_back(pixel_position[3]);}  
 +            pixel_array.push_back(current_color);
++            if (_quality < quality) {_quality = quality;}
 +        }
++        if (y % 2 == 0) {
++          _quality = quality / 2;
++        } else {_quality = quality;}
 +    }
 +    stbi_image_free(pixel_result);
-+    return pixel_array;
++    return QuantizeCelebi(pixel_array, max_colors);
  }
  
 -}  // namespace material_color_utilities
++
 +PYBIND11_MODULE(celebi, m) {
 +    m.doc() = "Functions from cpp backend";
 +    m.def("QuantizeCelebi", &QuantizeCelebi, "Get dominant colors");
-+    m.def("StbLoadImage", &StbLoadImage, "Get pixel array");
++    m.def("ImageQuantizeCelebi", &ImageQuantizeCelebi, "Get pixel array");
 +}
