@@ -70,7 +70,7 @@ class TonalPalette:
         key_color = KeyColor(hue, chroma).create()
         return TonalPalette(hue, chroma, key_color)
 
-    def tone(self, tone: float) -> int:
+    def tone(self, tone: float) -> list[float]:
         argb = self.cache.get(tone)
         if argb is None:
             argb = Hct.from_hct(self.hue, self.chroma, tone).to_int()
