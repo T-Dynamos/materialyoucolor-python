@@ -9,7 +9,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, macos-14]
+        os: [windows-latest, macos-latest, macos-15]
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
         dist: [bdist_wheel]
     steps:
@@ -25,7 +25,7 @@ jobs:
         curl -L -o test_image.jpg "https://unsplash.com/photos/zQLd8RXbenw/download?ixid=M3wxMjA3fDB8MXx0b3BpY3x8NnNNVmpUTFNrZVF8fHx8fDJ8fDE3MzY0MDA3NTd8&force=true&w=2400"
     - name: Install dependencies
       run: |
-        pip install --upgrade pip setuptools rich  wheel requests pillow
+        python -m pip install --upgrade pip setuptools rich  wheel requests pillow
     - name: Build wheel
       run: |
         python setup.py ${{ matrix.dist }}
