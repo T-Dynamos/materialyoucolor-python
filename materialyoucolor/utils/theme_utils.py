@@ -2,7 +2,6 @@ from materialyoucolor.blend import Blend
 from materialyoucolor.palettes.core_palette import CorePalette
 from materialyoucolor.palettes.tonal_palette import TonalPalette
 from materialyoucolor.scheme import Scheme
-from materialyoucolor.utils.image_utils import source_color_from_image
 from materialyoucolor.dislike.dislike_analyzer import DislikeAnalyzer
 from materialyoucolor.hct import Hct
 
@@ -21,10 +20,10 @@ class Theme:
         self.custom_colors = custom_colors
 
 
-def custom_color(custom_color, source_color=None, blend=False):
-    value = DislikeAnalyzer.fix_if_disliked(Hct.from_int(custom_color))
+def custom_color(custom_color : int, source_color=None, blend=False):
+    value = DislikeAnalyzer.fix_if_disliked(Hct.from_int(custom_color)).to_int()
     if blend:
-        value = Blend.harmonize(value, source_color)
+        value = Blend.harmonize(custom_color, source_color)
     palette = CorePalette.of(value)
     tones = palette.a1
     return {
