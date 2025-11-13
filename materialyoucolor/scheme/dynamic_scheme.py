@@ -2,48 +2,31 @@ from materialyoucolor.hct import Hct
 from materialyoucolor.palettes.tonal_palette import TonalPalette
 from materialyoucolor.scheme.variant import Variant
 from materialyoucolor.utils.math_utils import sanitize_degrees_double
+from dataclasses import dataclass
 
-
+@dataclass
 class DynamicSchemeOptions:
-    def __init__(
-        self,
-        source_color_hct: Hct,
-        variant: Variant,
-        contrast_level: int,
-        is_dark: bool,
-        primary_palette: TonalPalette,
-        secondary_palette: TonalPalette,
-        tertiary_palette: TonalPalette,
-        neutral_palette: TonalPalette,
-        neutral_variant_palette: TonalPalette,
-        error_palette: TonalPalette = None,
-    ):
-        self.source_color_argb = source_color_hct.to_int()
-        self.source_color_hct = source_color_hct
-        self.variant = variant
-        self.contrast_level = contrast_level
-        self.is_dark = is_dark
-        self.primary_palette = primary_palette
-        self.secondary_palette = secondary_palette
-        self.tertiary_palette = tertiary_palette
-        self.neutral_palette = neutral_palette
-        self.neutral_variant_palette = neutral_variant_palette
-        self.error_palette = error_palette
+    source_color_hct: Hct
+    variant: Variant
+    contrast_level: int
+    is_dark: bool
+    primary_palette: TonalPalette
+    secondary_palette: TonalPalette
+    tertiary_palette: TonalPalette
+    neutral_palette: TonalPalette
+    neutral_variant_palette: TonalPalette
+    error_palette: TonalPalette = None
+    platform: str = "phone"
+
+    def __post_init__(self):
+        self.source_color_argb = self.source_color_hct.to_int()
 
 
 class DynamicScheme:
-    def __init__(self, args: DynamicSchemeOptions):
-        self.source_color_argb = args.source_color_argb
-        self.variant = args.variant
-        self.contrast_level = args.contrast_level
-        self.is_dark = args.is_dark
-        self.source_color_hct = args.source_color_hct
-        self.primary_palette = args.primary_palette
-        self.secondary_palette = args.secondary_palette
-        self.tertiary_palette = args.tertiary_palette
-        self.neutral_palette = args.neutral_palette
-        self.neutral_variant_palette = args.neutral_variant_palette
-        if args.error_palette is None:
+    def __init__(self, scheme_options: DynamicSchemeOptions):
+        self.__dict__.update(vars(scheme_options))
+
+        if self.error_palette is None:
             self.error_palette = TonalPalette.from_hue_and_chroma(25.0, 84.0)
 
     @staticmethod

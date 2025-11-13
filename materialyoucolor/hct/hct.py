@@ -72,6 +72,15 @@ class Hct:
             )
         )
 
+    def is_blue(hue: float):
+        return hue >= 250 and hue < 270
+
+    def is_yellow(hue: float):
+        return hue >= 105 and hue < 125
+
+    def is_cyan(hue: float):
+        return hue >= 170 and hue < 207
+
     def in_viewing_conditions(self, vc: ViewingConditions):
         cam = Cam16.from_int(self.to_int())
         viewed_in_vc = cam.xyz_in_viewing_conditions(vc)

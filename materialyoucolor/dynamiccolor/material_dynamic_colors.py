@@ -157,7 +157,7 @@ class MaterialDynamicColors:
         FromPaletteOptions(
             name="surface",
             palette=lambda s: s.neutral_palette,
-            tone=lambda s: 6 if s.is_dark else 98,
+            tone=lambda s: (0) if s.platform == "phone" else 0,
             is_background=True,
         )
     )
@@ -339,72 +339,72 @@ class MaterialDynamicColors:
         )
     )
 
-    primary = DynamicColor.from_palette(
-        FromPaletteOptions(
-            name="primary",
-            palette=lambda s: s.primary_palette,
-            tone=lambda s: 100 if is_monochrome(s) else (80 if s.is_dark else 40),
-            is_background=True,
-            background=lambda s: MaterialDynamicColors.highestSurface(s),
-            contrast_curve=ContrastCurve(3, 4.5, 7, 7),
-            tone_delta_pair=lambda s: ToneDeltaPair(
-                MaterialDynamicColors.primaryContainer,
-                MaterialDynamicColors.primary,
-                10,
-                "nearer",
-                False,
-            ),
-        )
-    )
+    # primary = DynamicColor.from_palette(
+    #     FromPaletteOptions(
+    #         name="primary",
+    #         palette=lambda s: s.primary_palette,
+    #         tone=lambda s: 100 if is_monochrome(s) else (80 if s.is_dark else 40),
+    #         is_background=True,
+    #         background=lambda s: MaterialDynamicColors.highestSurface(s),
+    #         contrast_curve=ContrastCurve(3, 4.5, 7, 7),
+    #         tone_delta_pair=lambda s: ToneDeltaPair(
+    #             MaterialDynamicColors.primaryContainer,
+    #             MaterialDynamicColors.primary,
+    #             10,
+    #             "nearer",
+    #             False,
+    #         ),
+    #     )
+    # )
 
-    onPrimary = DynamicColor.from_palette(
-        FromPaletteOptions(
-            name="on_primary",
-            palette=lambda s: s.primary_palette,
-            tone=lambda s: 10 if is_monochrome(s) else (20 if s.is_dark else 100),
-            background=lambda s: MaterialDynamicColors.primary,
-            contrast_curve=ContrastCurve(4.5, 7, 11, 21),
-        )
-    )
-
-    primaryContainer = DynamicColor.from_palette(
-        FromPaletteOptions(
-            name="primary_container",
-            palette=lambda s: s.primary_palette,
-            tone=lambda s: (
-                s.source_color_hct.tone
-                if is_fidelity(s)
-                else (85 if is_monochrome(s) else (30 if s.is_dark else 90))
-            ),
-            is_background=True,
-            background=lambda s: MaterialDynamicColors.highestSurface(s),
-            contrast_curve=ContrastCurve(1, 1, 3, 4.5),
-            tone_delta_pair=lambda s: ToneDeltaPair(
-                MaterialDynamicColors.primaryContainer,
-                MaterialDynamicColors.primary,
-                10,
-                "nearer",
-                False,
-            ),
-        )
-    )
-
-    onPrimaryContainer = DynamicColor.from_palette(
-        FromPaletteOptions(
-            name="on_primary_container",
-            palette=lambda s: s.primary_palette,
-            tone=lambda s: (
-                DynamicColor.foreground_tone(
-                    MaterialDynamicColors.primaryContainer.tone(s), 4.5
-                )
-                if is_fidelity(s)
-                else (0 if is_monochrome(s) else (90 if s.is_dark else 30))
-            ),
-            background=lambda s: MaterialDynamicColors.primaryContainer,
-            contrast_curve=ContrastCurve(3, 4.5, 7, 11),
-        )
-    )
-
+    # onPrimary = DynamicColor.from_palette(
+    #     FromPaletteOptions(
+    #         name="on_primary",
+    #         palette=lambda s: s.primary_palette,
+    #         tone=lambda s: 10 if is_monochrome(s) else (20 if s.is_dark else 100),
+    #         background=lambda s: MaterialDynamicColors.primary,
+    #         contrast_curve=ContrastCurve(4.5, 7, 11, 21),
+    #     )
+    # )
+    #
+    # primaryContainer = DynamicColor.from_palette(
+    #     FromPaletteOptions(
+    #         name="primary_container",
+    #         palette=lambda s: s.primary_palette,
+    #         tone=lambda s: (
+    #             s.source_color_hct.tone
+    #             if is_fidelity(s)
+    #             else (85 if is_monochrome(s) else (30 if s.is_dark else 90))
+    #         ),
+    #         is_background=True,
+    #         background=lambda s: MaterialDynamicColors.highestSurface(s),
+    #         contrast_curve=ContrastCurve(1, 1, 3, 4.5),
+    #         tone_delta_pair=lambda s: ToneDeltaPair(
+    #             MaterialDynamicColors.primaryContainer,
+    #             MaterialDynamicColors.primary,
+    #             10,
+    #             "nearer",
+    #             False,
+    #         ),
+    #     )
+    # )
+    #
+    # onPrimaryContainer = DynamicColor.from_palette(
+    #     FromPaletteOptions(
+    #         name="on_primary_container",
+    #         palette=lambda s: s.primary_palette,
+    #         tone=lambda s: (
+    #             DynamicColor.foreground_tone(
+    #                 MaterialDynamicColors.primaryContainer.tone(s), 4.5
+    #             )
+    #             if is_fidelity(s)
+    #             else (0 if is_monochrome(s) else (90 if s.is_dark else 30))
+    #         ),
+    #         background=lambda s: MaterialDynamicColors.primaryContainer,
+    #         contrast_curve=ContrastCurve(3, 4.5, 7, 11),
+    #     )
+    # )
+    #
     inversePrimary = DynamicColor.from_palette(
         FromPaletteOptions(
             name="inverse_primary",
