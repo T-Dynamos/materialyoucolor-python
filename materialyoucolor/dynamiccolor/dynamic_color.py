@@ -1,232 +1,158 @@
-from materialyoucolor.contrast import Contrast
-from materialyoucolor.hct import Hct
-from materialyoucolor.palettes.tonal_palette import TonalPalette
-from materialyoucolor.scheme.dynamic_scheme import DynamicScheme
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Callable, Optional
+
+from materialyoucolor.contrast.contrast import Contrast
+from materialyoucolor.dynamiccolor.color_spec import (
+    SpecVersion,
+    get_color_calculation_delegate,
+)
 from materialyoucolor.dynamiccolor.contrast_curve import ContrastCurve
 from materialyoucolor.dynamiccolor.tone_delta_pair import ToneDeltaPair
+from materialyoucolor.hct.hct import Hct
+from materialyoucolor.palettes.tonal_palette import TonalPalette
+from materialyoucolor.utils.color_utils import hex_from_argb, rgba_from_argb
 
 
+@dataclass
 class FromPaletteOptions:
-    def __init__(
-        self,
-        name=str,
-        palette=None,
-        tone=int,
-        is_background=bool,
-        background=None,
-        second_background=None,
-        contrast_curve=None,
-        tone_delta_pair=None,
-    ):
-        self.name = name
-        self.palette = palette
-        self.tone = tone
-        self.is_background = is_background
-        self.background = background
-        self.second_background = second_background
-        self.contrast_curve = contrast_curve
-        self.tone_delta_pair = tone_delta_pair
+    name: str = ""
+    palette: Callable[[DynamicScheme], TonalPalette] = None
+    tone: Callable[[DynamicScheme], float] = None
+    chroma_multiplier: Optional[Callable[[DynamicScheme], float]] = None
+    is_background: bool = False
+    background: Optional[Callable[[DynamicScheme], "DynamicColor"]] = None
+    second_background: Optional[Callable[[DynamicScheme], "DynamicColor"]] = None
+    contrast_curve: Optional[Callable[[DynamicScheme], ContrastCurve]] = None
+    tone_delta_pair: Optional[Callable[[DynamicScheme], ToneDeltaPair]] = None
 
 
-class DynamicColor:
-    hct_cache = dict[DynamicScheme, Hct]
-    name = str
-    palette = None
-    tone = int
-    is_background = bool
-    background = None
-    second_background = None
-    contrast_curve = None
-    tone_delta_pair = None
+def validate_extended_color(
+    original_color: "DynamicColor",
+    spec_version: SpecVersion,
+    extended_color: "DynamicColor",
+):
+    if original_color.name != extended_color.name:
+        raise ValueError(
+            f"Attempting to extend color {original_color.name} with color {extended_color.name} "
+            f"of different name for spec version {spec_version}."
+        )
+    if original_color.is_background != extended_color.is_background:
+        raise ValueError(
+            f"Attempting to extend color {original_color.name} as a "
+            f"{'background' if original_color.is_background else 'foreground'} with color {extended_color.name} as a "
+            f"{'background' if extended_color.is_background else 'foreground'} for spec version {spec_version}."
+        )
 
-    def __init__(
-        self,
-        name=str,
-        palette=None,
-        tone=int,
-        is_background=bool,
-        background=None,
-        second_background=None,
-        contrast_curve=None,
-        tone_delta_pair=None,
-    ):
-        self.name = name
-        self.palette = palette
-        self.tone = tone
-        self.is_background = is_background
-        self.background = background
-        self.second_background = second_background
-        self.contrast_curve = contrast_curve
-        self.tone_delta_pair = tone_delta_pair
+
+def extend_spec_version(original, spec, extended):
+    validate_extended_color(original, spec, extended)
+
+    def choose(s, _ext=extended, _orig=original, _spec=spec):
+        return _ext if s.spec_version == _spec else _orig
+
+    return DynamicColor(
+        name=original.name,
+        is_background=original.is_background,
+        palette=lambda s: choose(s).palette(s),
+        tone=lambda s: (
+            choose(s).tone(s) if choose(s).tone is not None else original.tone(s)
+        ),
+        chroma_multiplier=lambda s: (
+            choose(s).chroma_multiplier(s) if choose(s).chroma_multiplier else 1.0
+        ),
+        background=lambda s: (
+            choose(s).background(s) if choose(s).background else None
+        ),
+        second_background=lambda s: (
+            choose(s).second_background(s) if choose(s).second_background else None
+        ),
+        contrast_curve=lambda s: (
+            choose(s).contrast_curve(s) if choose(s).contrast_curve else None
+        ),
+        tone_delta_pair=lambda s: (
+            choose(s).tone_delta_pair(s) if choose(s).tone_delta_pair else None
+        ),
+    )
+
+
+class DynamicColor(FromPaletteOptions):
+    hct_cache = {}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.hct_cache = {}
         if not self.background and self.second_background:
             raise ValueError(
-                f"Color {name} has secondBackground defined, but background is not defined."
+                f"Color {self.name} has second_background defined, but background is not defined."
             )
         if not self.background and self.contrast_curve:
             raise ValueError(
-                f"Color {name} has contrastCurve defined, but background is not defined."
+                f"Color {self.name} has contrast_curve defined, but background is not defined."
             )
         if self.background and not self.contrast_curve:
             raise ValueError(
-                f"Color {name} has background defined, but contrastCurve is not defined."
+                f"Color {self.name} has background defined, but contrast_curve is not defined."
             )
 
+    @classmethod
+    def from_palette(cls, *args, **kwargs) -> "DynamicColor":
+        return cls(*args, **kwargs)
+
     @staticmethod
-    def from_palette(args: FromPaletteOptions):
-        return DynamicColor(
-            args.name,
-            args.palette,
-            args.tone,
-            args.is_background,
-            args.background,
-            args.second_background,
-            args.contrast_curve,
-            args.tone_delta_pair,
+    def get_initial_tone_from_background(
+        background: Optional[Callable[[DynamicScheme], "DynamicColor"]] = None,
+    ) -> Callable[[DynamicScheme], float]:
+        if background is None:
+            return lambda s: 50
+        return lambda s: background(s).get_tone(s) if background(s) else 50
+
+    def clone(self) -> "DynamicColor":
+        return DynamicColor.from_palette(
+            name=self.name,
+            palette=self.palette,
+            tone=self.tone,
+            is_background=self.is_background,
+            chroma_multiplier=self.chroma_multiplier,
+            background=self.background,
+            second_background=self.second_background,
+            contrast_curve=self.contrast_curve,
+            tone_delta_pair=self.tone_delta_pair,
         )
+
+    def clear_cache(self):
+        self.hct_cache.clear()
 
     def get_argb(self, scheme: DynamicScheme) -> int:
         return self.get_hct(scheme).to_int()
+
+    def get_hex(self, scheme: DynamicScheme) -> str:
+        return hex_from_argb(self.get_hct(scheme).to_int())
+
+    def get_rgba(self, scheme: DynamicScheme) -> list[int]:
+        return rgba_from_argb(self.get_hct(scheme).to_int())
 
     def get_hct(self, scheme: DynamicScheme) -> Hct:
         cached_answer = self.hct_cache.get(scheme)
         if cached_answer is not None:
             return cached_answer
 
-        tone = self.get_tone(scheme)
-        answer = self.palette(scheme).get_hct(tone)
+        answer = get_color_calculation_delegate(scheme.spec_version).get_hct(
+            scheme, self
+        )
         if len(self.hct_cache) > 4:
             self.hct_cache.clear()
         self.hct_cache[scheme] = answer
         return answer
 
-    def get_tone(self, scheme):
-        decreasing_contrast = scheme.contrast_level < 0
-
-        if self.tone_delta_pair:
-            tone_delta_pair = self.tone_delta_pair(scheme)
-            role_a, role_b = tone_delta_pair.role_a, tone_delta_pair.role_b
-            delta, polarity, stay_together = (
-                tone_delta_pair.delta,
-                tone_delta_pair.polarity,
-                tone_delta_pair.stay_together,
-            )
-
-            bg = self.background(scheme)
-            bg_tone = bg.get_tone(scheme)
-
-            a_is_nearer = (
-                polarity == "nearer"
-                or (polarity == "lighter" and not scheme.is_dark)
-                or (polarity == "darker" and scheme.is_dark)
-            )
-            nearer, farther = (role_a, role_b) if a_is_nearer else (role_b, role_a)
-            am_nearer = self.name == nearer.name
-            expansion_dir = 1 if scheme.is_dark else -1
-
-            n_contrast = nearer.contrast_curve.get(scheme.contrast_level)
-            f_contrast = farther.contrast_curve.get(scheme.contrast_level)
-
-            n_initial_tone = nearer.tone(scheme)
-            n_tone = (
-                n_initial_tone
-                if Contrast.ratio_of_tones(bg_tone, n_initial_tone) >= n_contrast
-                else DynamicColor.foreground_tone(bg_tone, n_contrast)
-            )
-
-            f_initial_tone = farther.tone(scheme)
-            f_tone = (
-                f_initial_tone
-                if Contrast.ratio_of_tones(bg_tone, f_initial_tone) >= f_contrast
-                else DynamicColor.foreground_tone(bg_tone, f_contrast)
-            )
-
-            if decreasing_contrast:
-                n_tone = DynamicColor.foreground_tone(bg_tone, n_contrast)
-                f_tone = DynamicColor.foreground_tone(bg_tone, f_contrast)
-
-            if (f_tone - n_tone) * expansion_dir >= delta:
-                pass
-            else:
-                f_tone = (
-                    min(max(n_tone + delta * expansion_dir, 0), 100)
-                    if (f_tone - n_tone) * expansion_dir >= delta
-                    else min(max(f_tone - delta * expansion_dir, 0), 100)
-                )
-
-            if 50 <= n_tone < 60:
-                if expansion_dir > 0:
-                    n_tone, f_tone = 60, max(f_tone, n_tone + delta * expansion_dir)
-                else:
-                    n_tone, f_tone = 49, min(f_tone, n_tone + delta * expansion_dir)
-            elif 50 <= f_tone < 60:
-                if stay_together:
-                    if expansion_dir > 0:
-                        n_tone, f_tone = 60, max(f_tone, n_tone + delta * expansion_dir)
-                    else:
-                        n_tone, f_tone = 49, min(f_tone, n_tone + delta * expansion_dir)
-                else:
-                    if expansion_dir > 0:
-                        f_tone = 60
-                    else:
-                        f_tone = 49
-
-            return n_tone if am_nearer else f_tone
-
-        else:
-            answer = self.tone(scheme)
-
-            if self.background is None:
-                return answer
-
-            bg_tone = self.background(scheme).get_tone(scheme)
-            desired_ratio = self.contrast_curve.get(scheme.contrast_level)
-
-            if Contrast.ratio_of_tones(bg_tone, answer) >= desired_ratio:
-                pass
-            else:
-                answer = DynamicColor.foreground_tone(bg_tone, desired_ratio)
-
-            if decreasing_contrast:
-                answer = DynamicColor.foreground_tone(bg_tone, desired_ratio)
-
-            if self.is_background and 50 <= answer < 60:
-                answer = (
-                    49 if Contrast.ratio_of_tones(49, bg_tone) >= desired_ratio else 60
-                )
-
-            if self.second_background:
-                bg1, bg2 = self.background, self.second_background
-                bg_tone1, bg_tone2 = bg1(scheme).get_tone(scheme), bg2(scheme).get_tone(
-                    scheme
-                )
-                upper, lower = max(bg_tone1, bg_tone2), min(bg_tone1, bg_tone2)
-
-                if (
-                    Contrast.ratio_of_tones(upper, answer) >= desired_ratio
-                    and Contrast.ratio_of_tones(lower, answer) >= desired_ratio
-                ):
-                    return answer
-
-                light_option = Contrast.lighter(upper, desired_ratio)
-                dark_option = Contrast.darker(lower, desired_ratio)
-                availables = [light_option] if light_option != -1 else []
-                if dark_option != -1:
-                    availables.append(dark_option)
-
-                prefers_light = DynamicColor.tone_prefers_light_foreground(
-                    bg_tone1
-                ) or DynamicColor.tone_prefers_light_foreground(bg_tone2)
-                return (
-                    light_option
-                    if prefers_light and (light_option == -1 or dark_option == -1)
-                    else dark_option
-                )
-
-            return answer
+    def get_tone(self, scheme: DynamicScheme) -> float:
+        return get_color_calculation_delegate(scheme.spec_version).get_tone(
+            scheme, self
+        )
 
     @staticmethod
-    def foreground_tone(bg_tone, ratio):
+    def foreground_tone(bg_tone: float, ratio: float) -> float:
         lighter_tone = Contrast.lighter_unsafe(bg_tone, ratio)
         darker_tone = Contrast.darker_unsafe(bg_tone, ratio)
         lighter_ratio = Contrast.ratio_of_tones(lighter_tone, bg_tone)
@@ -254,15 +180,15 @@ class DynamicColor:
             )
 
     @staticmethod
-    def tone_prefers_light_foreground(tone):
+    def tone_prefers_light_foreground(tone: float) -> bool:
         return round(tone) < 60.0
 
     @staticmethod
-    def tone_allows_light_foreground(tone):
+    def tone_allows_light_foreground(tone: float) -> bool:
         return round(tone) <= 49.0
 
     @staticmethod
-    def enable_light_foreground(tone):
+    def enable_light_foreground(tone: float) -> float:
         if DynamicColor.tone_prefers_light_foreground(
             tone
         ) and not DynamicColor.tone_allows_light_foreground(tone):

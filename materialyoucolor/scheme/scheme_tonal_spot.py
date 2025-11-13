@@ -1,32 +1,26 @@
-from materialyoucolor.scheme.dynamic_scheme import DynamicSchemeOptions, DynamicScheme
-from materialyoucolor.scheme.variant import Variant
-from materialyoucolor.palettes.tonal_palette import TonalPalette
-from materialyoucolor.utils.math_utils import sanitize_degrees_double
+from materialyoucolor.dynamiccolor.dynamic_scheme import (
+    DynamicScheme,
+    Platform,
+    SpecVersion,
+)
+from materialyoucolor.dynamiccolor.variant import Variant
+from materialyoucolor.hct.hct import Hct
 
 
 class SchemeTonalSpot(DynamicScheme):
-    def __init__(self, source_color_hct, is_dark, contrast_level):
+    def __init__(
+        self,
+        source_color_hct: Hct,
+        is_dark: bool,
+        contrast_level: float,
+        spec_version: SpecVersion = DynamicScheme.DEFAULT_SPEC_VERSION,
+        platform: Platform = DynamicScheme.DEFAULT_PLATFORM,
+    ):
         super().__init__(
-            DynamicSchemeOptions(
-                source_color_hct=source_color_hct,
-                variant=Variant.TONAL_SPOT,
-                contrast_level=contrast_level,
-                is_dark=is_dark,
-                primary_palette=TonalPalette.from_hue_and_chroma(
-                    source_color_hct.hue, 36.0
-                ),
-                secondary_palette=TonalPalette.from_hue_and_chroma(
-                    source_color_hct.hue, 16.0
-                ),
-                tertiary_palette=TonalPalette.from_hue_and_chroma(
-                    sanitize_degrees_double(source_color_hct.hue + 60.0),
-                    24.0,
-                ),
-                neutral_palette=TonalPalette.from_hue_and_chroma(
-                    source_color_hct.hue, 6.0
-                ),
-                neutral_variant_palette=TonalPalette.from_hue_and_chroma(
-                    source_color_hct.hue, 8.0
-                ),
-            )
+            source_color_hct=source_color_hct,
+            variant=Variant.TONAL_SPOT,
+            contrast_level=contrast_level,
+            is_dark=is_dark,
+            platform=platform,
+            spec_version=spec_version,
         )

@@ -1,27 +1,25 @@
 import json
+import math
 import os
 from glob import glob as path_find
-import math
 from timeit import default_timer
 
-from materialyoucolor.scheme.scheme_tonal_spot import SchemeTonalSpot
+from materialyoucolor.hct import Hct
+from materialyoucolor.palettes.tonal_palette import TonalPalette
+from materialyoucolor.scheme.dynamic_scheme import DynamicScheme, DynamicSchemeOptions
+from materialyoucolor.scheme.scheme_content import SchemeContent
 from materialyoucolor.scheme.scheme_expressive import SchemeExpressive
+from materialyoucolor.scheme.scheme_fidelity import SchemeFidelity
 from materialyoucolor.scheme.scheme_fruit_salad import SchemeFruitSalad
 from materialyoucolor.scheme.scheme_monochrome import SchemeMonochrome
-from materialyoucolor.scheme.scheme_rainbow import SchemeRainbow
-from materialyoucolor.scheme.scheme_vibrant import SchemeVibrant
 from materialyoucolor.scheme.scheme_neutral import SchemeNeutral
-from materialyoucolor.scheme.scheme_fidelity import SchemeFidelity
-from materialyoucolor.scheme.scheme_content import SchemeContent
-
-from materialyoucolor.scheme.dynamic_scheme import DynamicSchemeOptions, DynamicScheme
-from materialyoucolor.palettes.tonal_palette import TonalPalette
+from materialyoucolor.scheme.scheme_rainbow import SchemeRainbow
+from materialyoucolor.scheme.scheme_tonal_spot import SchemeTonalSpot
+from materialyoucolor.scheme.scheme_vibrant import SchemeVibrant
 from materialyoucolor.scheme.variant import Variant
+from materialyoucolor.score.score import Score
 from materialyoucolor.utils.color_utils import argb_from_rgba_01, srgb_to_argb
 from materialyoucolor.utils.math_utils import sanitize_degrees_double
-from materialyoucolor.hct import Hct
-from materialyoucolor.score.score import Score
-from materialyoucolor.dynamiccolor.material_dynamic_colors import MaterialDynamicColors
 
 try:
     from materialyoucolor.quantize import QuantizeCelebi
@@ -32,8 +30,8 @@ autoclass = None
 _is_android = "ANDROID_ARGUMENT" in os.environ
 
 if _is_android:
-    from jnius import autoclass
     from android import mActivity
+    from jnius import autoclass
 
     Integer = autoclass("java.lang.Integer")
     BuildVERSION = autoclass("android.os.Build$VERSION")
@@ -156,15 +154,17 @@ def _get_android_12_above(
         logger("Got system theme style '{}'".format(selected_scheme))
 
     # Get system colors
-    get_system_color = lambda color_name: srgb_to_argb(
-        context.getColor(
-            context.getResources().getIdentifier(
-                COLOR_NAMES[color_name].format(APPROX_TONE),
-                "color",
-                "android",
+    def get_system_color(color_name):
+        return srgb_to_argb(
+            context.getColor(
+                context.getResources().getIdentifier(
+                    COLOR_NAMES[color_name].format(APPROX_TONE),
+                    "color",
+                    "android",
+                )
             )
         )
-    )
+
     color_names = COLOR_NAMES.copy()
     for color_name in COLOR_NAMES.keys():
         hct = Hct.from_int(get_system_color(color_name))
@@ -204,7 +204,8 @@ def get_dynamic_scheme(
     message_logger=print,
     logger_head="MaterialYouColor",
 ) -> DynamicScheme:
-    logger = lambda message: message_logger(logger_head + " : " + message)
+    def logger(message):
+        return message_logger(logger_head + " : " + message)
 
     selected_scheme = None
     selected_color = None
@@ -281,7 +282,10 @@ def get_dynamic_scheme(
     ):
         timer_start = default_timer()
         pixel_len = image.width * image.height
-        image_data = image.getdata()
+        try:
+            image_data = image.get_flattened_data()
+        except:
+            image_data = image.getdata()
         # TODO: Think about getting data from bitmap
         pixel_array = [
             image_data[_]
@@ -300,7 +304,7 @@ def get_dynamic_scheme(
             selected_color,
             os.path.getsize(fallback_wallpaper_path),
         ]
-        logger(f"Got dominant colors - " f"{default_timer() - timer_start} sec.")
+        logger(f"Got dominant colors - {default_timer() - timer_start} sec.")
 
     return (
         (

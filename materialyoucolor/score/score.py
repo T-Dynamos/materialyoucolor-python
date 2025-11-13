@@ -1,28 +1,30 @@
-from materialyoucolor.hct import Hct
-from materialyoucolor.utils.math_utils import sanitize_degrees_int, difference_degrees
-from materialyoucolor.dislike.dislike_analyzer import DislikeAnalyzer
+from typing import Any, Dict, List, Optional
+
+from materialyoucolor.hct.hct import Hct
+from materialyoucolor.utils.math_utils import difference_degrees, sanitize_degrees_int
 
 
 class ScoreOptions:
     def __init__(
         self,
-        desired: int,
-        fallback_color_argb: int,
-        filter: bool,
-        dislike_filter: False,
+        desired: int = 4,
+        fallback_color_argb: int = 0xFF4285F4,
+        filter: bool = True,
     ):
         self.desired = desired
         self.fallback_color_argb = fallback_color_argb
         self.filter = filter
-        self.dislike_filter = dislike_filter
 
 
-SCORE_OPTION_DEFAULTS = ScoreOptions(
-    desired=4,
-    fallback_color_argb=0xFF4285F4,  # Google Blue.
-    filter=True,  # Avoid unsuitable colors.
-    dislike_filter=False,  # Fix globally disliked colors
-)
+SCORE_OPTION_DEFAULTS = ScoreOptions()
+
+
+def compare(a: Dict[str, Any], b: Dict[str, Any]) -> int:
+    if a["score"] > b["score"]:
+        return -1
+    elif a["score"] < b["score"]:
+        return 1
+    return 0
 
 
 class Score:
@@ -37,21 +39,22 @@ class Score:
         pass
 
     @staticmethod
-    def score(colors_to_population: dict, options: ScoreOptions = None) -> list[int]:
+    def score(
+        colors_to_population: Dict[int, int], options: Optional[ScoreOptions] = None
+    ) -> List[int]:
         if options is None:
             options = SCORE_OPTION_DEFAULTS
 
         desired = options.desired
         fallback_color_argb = options.fallback_color_argb
         filter_enabled = options.filter
-        dislike_filter = options.dislike_filter
 
-        colors_hct = []
+        colors_hct: List[Hct] = []
         hue_population = [0] * 360
         population_sum = 0
 
-        for rgb, population in colors_to_population.items():
-            hct = Hct.from_int(rgb)
+        for argb, population in colors_to_population.items():
+            hct = Hct.from_int(argb)
             colors_hct.append(hct)
             hue = int(hct.hue)
             hue_population[hue] += population
@@ -62,12 +65,12 @@ class Score:
         for hue in range(360):
             proportion = hue_population[hue] / population_sum
             for i in range(hue - 14, hue + 16):
-                neighbor_hue = int(sanitize_degrees_int(i))
+                neighbor_hue = sanitize_degrees_int(i)
                 hue_excited_proportions[neighbor_hue] += proportion
 
-        scored_hct = []
+        scored_hct: List[Dict[str, Any]] = []
         for hct in colors_hct:
-            hue = int(sanitize_degrees_int(round(hct.hue)))
+            hue = sanitize_degrees_int(round(hct.hue))
             proportion = hue_excited_proportions[hue]
 
             if filter_enabled and (
@@ -83,15 +86,16 @@ class Score:
                 else Score.WEIGHT_CHROMA_ABOVE
             )
             chroma_score = (hct.chroma - Score.TARGET_CHROMA) * chroma_weight
-            score = proportion_score + chroma_score
-            scored_hct.append({"hct": hct, "score": score})
+            score_value = proportion_score + chroma_score
+            scored_hct.append({"hct": hct, "score": score_value})
 
         scored_hct.sort(key=lambda x: x["score"], reverse=True)
 
-        chosen_colors = []
+        chosen_colors: List[Hct] = []
         for difference_degrees_ in range(90, 14, -1):
             chosen_colors.clear()
-            for hct in [item["hct"] for item in scored_hct]:
+            for item in scored_hct:
+                hct = item["hct"]
                 duplicate_hue = any(
                     difference_degrees(hct.hue, chosen_hct.hue) < difference_degrees_
                     for chosen_hct in chosen_colors
@@ -103,15 +107,10 @@ class Score:
             if len(chosen_colors) >= desired:
                 break
 
-        colors = []
+        colors: List[int] = []
         if not chosen_colors:
             colors.append(fallback_color_argb)
-
-        if dislike_filter:
+        else:
             for chosen_hct in chosen_colors:
-                chosen_colors[chosen_colors.index(chosen_hct)] = (
-                    DislikeAnalyzer.fix_if_disliked(chosen_hct)
-                )
-        for chosen_hct in chosen_colors:
-            colors.append(chosen_hct.to_int())
+                colors.append(chosen_hct.to_int())
         return colors

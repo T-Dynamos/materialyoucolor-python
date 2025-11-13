@@ -1,17 +1,17 @@
 import math
 
-from materialyoucolor.utils.math_utils import (
-    signum,
-    matrix_multiply,
-    sanitize_degrees_double,
-)
-from materialyoucolor.utils.color_utils import (
-    argb_from_lstar,
-    argb_from_linrgb,
-    y_from_lstar,
-)
 from materialyoucolor.hct.cam16 import Cam16
 from materialyoucolor.hct.viewing_conditions import ViewingConditions
+from materialyoucolor.utils.color_utils import (
+    argb_from_linrgb,
+    argb_from_lstar,
+    y_from_lstar,
+)
+from materialyoucolor.utils.math_utils import (
+    matrix_multiply,
+    sanitize_degrees_double,
+    signum,
+)
 
 
 class HctSolver:
@@ -322,12 +322,12 @@ class HctSolver:
         if normalized <= 0.0031308:
             delinearized = normalized * 12.92
         else:
-            delinearized = 1.055 * pow(normalized, 1.0 / 2.4) - 0.055
+            delinearized = 1.055 * math.pow(normalized, 1.0 / 2.4) - 0.055
         return delinearized * 255.0
 
     @staticmethod
     def chromatic_adaptation(component: float) -> float:
-        af = pow(abs(component), 0.42)
+        af = math.pow(abs(component), 0.42)
         return signum(component) * 400.0 * af / (af + 27.13)
 
     @staticmethod
@@ -370,7 +370,7 @@ class HctSolver:
         return 0.0 <= x <= 100.0
 
     @staticmethod
-    def nth_vertex(y: float, n: float) -> list[float]:
+    def nth_vertex(y: float, n: int) -> list[float]:
         kr = HctSolver.Y_FROM_LINRGB[0]
         kg = HctSolver.Y_FROM_LINRGB[1]
         kb = HctSolver.Y_FROM_LINRGB[2]
@@ -487,7 +487,7 @@ class HctSolver:
                         break
                     else:
                         m_plane = math.floor((l_plane + r_plane) / 2.0)
-                        mid_plane_coordinate = HctSolver.CRITICAL_PLANES[m_plane]
+                        mid_plane_coordinate = HctSolver.CRITICAL_PLANES[int(m_plane)]
                         mid = HctSolver.set_coordinate(
                             left, mid_plane_coordinate, right, axis
                         )
@@ -512,7 +512,7 @@ class HctSolver:
     @staticmethod
     def find_result_by_j(hue_radians: float, chroma: float, y: float) -> int:
         j = math.sqrt(y) * 11.0
-        viewing_conditions = ViewingConditions.DEFAULT()
+        viewing_conditions = ViewingConditions.DEFAULT
         t_inner_coeff = 1 / math.pow(1.64 - math.pow(0.29, viewing_conditions.n), 0.73)
         e_hue = 0.25 * (math.cos(hue_radians + 2.0) + 3.8)
         p1 = e_hue * (50000.0 / 13.0) * viewing_conditions.nc * viewing_conditions.ncb
@@ -588,4 +588,4 @@ class HctSolver:
 
     @staticmethod
     def solve_to_cam(hueDegrees: float, chroma: float, lstar: float) -> Cam16:
-        return Cam16.from_int(int(HctSolver.solve_to_int(hueDegrees, chroma, lstar)))
+        return Cam16.from_int(HctSolver.solve_to_int(hueDegrees, chroma, lstar))

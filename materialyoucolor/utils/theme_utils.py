@@ -1,18 +1,47 @@
-from materialyoucolor.blend import Blend
+from typing import Any, Dict, List, Optional
+
+from materialyoucolor.blend.blend import Blend
 from materialyoucolor.palettes.core_palette import CorePalette
 from materialyoucolor.palettes.tonal_palette import TonalPalette
-from materialyoucolor.scheme import Scheme
-from materialyoucolor.dislike.dislike_analyzer import DislikeAnalyzer
-from materialyoucolor.hct import Hct
+from materialyoucolor.scheme.scheme import Scheme
+from materialyoucolor.utils.image_utils import source_color_from_image_bytes
+from materialyoucolor.utils.string_utils import hex_from_argb
+
+
+class CustomColor:
+    def __init__(self, value: int, name: str, blend: bool):
+        self.value = value
+        self.name = name
+        self.blend = blend
+
+
+class ColorGroup:
+    def __init__(
+        self, color: int, on_color: int, color_container: int, on_color_container: int
+    ):
+        self.color = color
+        self.on_color = on_color
+        self.color_container = color_container
+        self.on_color_container = on_color_container
+
+
+class CustomColorGroup:
+    def __init__(
+        self, color: CustomColor, value: int, light: ColorGroup, dark: ColorGroup
+    ):
+        self.color = color
+        self.value = value
+        self.light = light
+        self.dark = dark
 
 
 class Theme:
     def __init__(
         self,
         source: int,
-        schemes: dict,
-        palettes: dict,
-        custom_colors: list[dict],
+        schemes: Dict[str, Scheme],
+        palettes: Dict[str, TonalPalette],
+        custom_colors: List[CustomColorGroup],
     ):
         self.source = source
         self.schemes = schemes
@@ -20,39 +49,12 @@ class Theme:
         self.custom_colors = custom_colors
 
 
-def custom_color(custom_color : int, source_color=None, blend=False):
-    value = DislikeAnalyzer.fix_if_disliked(Hct.from_int(custom_color)).to_int()
-    if blend:
-        value = Blend.harmonize(custom_color, source_color)
-    palette = CorePalette.of(value)
-    tones = palette.a1
-    return {
-        "color": custom_color,
-        "theme_color": source_color,
-        "blended": blend,
-        "light": {
-            "color": tones.tone(40),
-            "onColor": tones.tone(100),
-            "colorContainer": tones.tone(90),
-            "onColorContainer": tones.tone(10),
-        },
-        "dark": {
-            "color": tones.tone(80),
-            "onColor": tones.tone(20),
-            "colorContainer": tones.tone(30),
-            "onColorContainer": tones.tone(90),
-        },
-    }
-
-
 def theme_from_source_color(
-    source: int, custom_colors=[], fix_if_disliked=False
+    source: int, custom_colors: Optional[List[CustomColor]] = None
 ) -> Theme:
-    palette = CorePalette.of(
-        DislikeAnalyzer.fix_if_disliked(Hct.from_int(source)).to_int()
-        if fix_if_disliked
-        else source
-    )
+    if custom_colors is None:
+        custom_colors = []
+    palette = CorePalette.of(source)
     return Theme(
         source,
         {"light": Scheme.light(source), "dark": Scheme.dark(source)},
@@ -64,8 +66,19 @@ def theme_from_source_color(
             "neutralVariant": palette.n2,
             "error": palette.error,
         },
-        [
-            custom_color(color, blend=True, source_color=source)
-            for color in custom_colors
-        ],
+        [custom_color_group(source, c) for c in custom_colors],
+    )
+
+
+def custom_color_group(source: int, custom_color: CustomColor) -> CustomColorGroup:
+    value = custom_color.value
+    if custom_color.blend:
+        value = Blend.harmonize(custom_color.value, source)
+    palette = CorePalette.of(value)
+    tones = palette.a1
+    return CustomColorGroup(
+        custom_color,
+        value,
+        ColorGroup(tones.tone(40), tones.tone(100), tones.tone(90), tones.tone(10)),
+        ColorGroup(tones.tone(80), tones.tone(20), tones.tone(30), tones.tone(90)),
     )

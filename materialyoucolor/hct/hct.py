@@ -1,12 +1,21 @@
-from materialyoucolor.utils.color_utils import lstar_from_argb, lstar_from_y
-from materialyoucolor.hct.viewing_conditions import ViewingConditions
-from materialyoucolor.hct.cam16 import Cam16
+from typing import TYPE_CHECKING
+
 from materialyoucolor.hct.hct_solver import HctSolver
-from materialyoucolor.utils.color_utils import rgba_from_argb
+from materialyoucolor.hct.viewing_conditions import ViewingConditions
+from materialyoucolor.utils.color_utils import (
+    lstar_from_argb,
+    lstar_from_y,
+    rgba_from_argb,
+)
+
+if TYPE_CHECKING:
+    pass
 
 
 class Hct:
     def __init__(self, argb: int):
+        from materialyoucolor.hct.cam16 import Cam16  # Local import
+
         cam = Cam16.from_int(argb)
         self.internal_hue = cam.hue
         self.internal_chroma = cam.chroma
@@ -14,6 +23,8 @@ class Hct:
         self.argb = argb
 
     def set_internal_state(self, argb: int):
+        from materialyoucolor.hct.cam16 import Cam16  # Local import
+
         cam = Cam16.from_int(argb)
         self.internal_hue = cam.hue
         self.internal_chroma = cam.chroma
@@ -22,7 +33,7 @@ class Hct:
 
     @staticmethod
     def from_hct(hue: float, chroma: float, tone: float):
-        return Hct(int(HctSolver.solve_to_int(hue, chroma, tone)))
+        return Hct(HctSolver.solve_to_int(hue, chroma, tone))
 
     @staticmethod
     def from_int(argb: int):
@@ -41,11 +52,7 @@ class Hct:
     @hue.setter
     def hue(self, new_hue: float):
         self.set_internal_state(
-            int(
-                HctSolver.solve_to_int(
-                    new_hue, self.internal_chroma, self.internal_tone
-                )
-            )
+            HctSolver.solve_to_int(new_hue, self.internal_chroma, self.internal_tone)
         )
 
     @property
@@ -65,14 +72,30 @@ class Hct:
     @tone.setter
     def tone(self, new_tone: float):
         self.set_internal_state(
-            int(
-                HctSolver.solve_to_int(
-                    self.internal_hue, self.internal_chroma, new_tone
-                )
-            )
+            HctSolver.solve_to_int(self.internal_hue, self.internal_chroma, new_tone)
         )
 
-    def in_viewing_conditions(self, vc: ViewingConditions):
+    def set_value(self, property_name: str, value: float):
+        setattr(self, property_name, value)
+
+    def __str__(self) -> str:
+        return f"HCT({self.hue:.0f}, {self.chroma:.0f}, {self.tone:.0f})"
+
+    @staticmethod
+    def is_blue(hue: float) -> bool:
+        return 250 <= hue < 270
+
+    @staticmethod
+    def is_yellow(hue: float) -> bool:
+        return 105 <= hue < 125
+
+    @staticmethod
+    def is_cyan(hue: float) -> bool:
+        return 170 <= hue < 207
+
+    def in_viewing_conditions(self, vc: ViewingConditions) -> "Hct":
+        from materialyoucolor.hct.cam16 import Cam16  # Local import
+
         cam = Cam16.from_int(self.to_int())
         viewed_in_vc = cam.xyz_in_viewing_conditions(vc)
         recast_in_vc = Cam16.from_xyz_in_viewing_conditions(

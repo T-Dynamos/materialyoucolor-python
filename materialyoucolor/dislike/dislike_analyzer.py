@@ -1,4 +1,4 @@
-from materialyoucolor.hct import Hct
+from materialyoucolor.hct.hct import Hct
 
 
 class DislikeAnalyzer:

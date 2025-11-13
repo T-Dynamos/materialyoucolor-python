@@ -663,7 +663,5 @@ setup(
             extra_compile_args=["-std=c++17"] if os.name != "nt" else ["/std:c++17"],
             extra_link_args=["-shared"] if platform.system() != "Darwin" else [],
         )
-        if not PURE_PYTHON
-        else ()
-    ],
+    ] if not PURE_PYTHON else [],
 )

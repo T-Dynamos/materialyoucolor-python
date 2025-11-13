@@ -1,10 +1,23 @@
 import math
-from materialyoucolor.utils.math_utils import lerp
+
 from materialyoucolor.utils.color_utils import white_point_d65, y_from_lstar
+from materialyoucolor.utils.math_utils import lerp
 
 
 class ViewingConditions:
-    def __init__(self, n, aw, nbb, ncb, c, nc, rgb_d, fl, f_l_root, z):
+    def __init__(
+        self,
+        n: float,
+        aw: float,
+        nbb: float,
+        ncb: float,
+        c: float,
+        nc: float,
+        rgb_d: list[float],
+        fl: float,
+        f_l_root: float,
+        z: float,
+    ):
         self.n = n
         self.aw = aw
         self.nbb = nbb
@@ -18,12 +31,12 @@ class ViewingConditions:
 
     @staticmethod
     def make(
-        white_point=white_point_d65(),
-        adapting_luminance=(200.0 / math.pi) * y_from_lstar(50.0) / 100.0,
-        background_lstar=50.0,
-        surround=2.0,
-        discounting_illuminant=False,
-    ):
+        white_point: list[float] = white_point_d65(),
+        adapting_luminance: float = (200.0 / math.pi) * y_from_lstar(50.0) / 100.0,
+        background_lstar: float = 50.0,
+        surround: float = 2.0,
+        discounting_illuminant: bool = False,
+    ) -> "ViewingConditions":
         xyz = white_point
         r_w = xyz[0] * 0.401288 + xyz[1] * 0.650173 + xyz[2] * -0.051461
         g_w = xyz[0] * -0.250268 + xyz[1] * 1.204414 + xyz[2] * 0.045854
@@ -39,7 +52,7 @@ class ViewingConditions:
             if discounting_illuminant
             else f * (1.0 - (1.0 / 3.6) * math.exp((-adapting_luminance - 42.0) / 92.0))
         )
-        d = 1.0 if d > 1.0 else 0.0 if d < 0.0 else d
+        d = 1.0 if d > 1.0 else (0.0 if d < 0.0 else d)
         nc = f
         rgb_d = [
             d * (100.0 / r_w) + 1.0 - d,
@@ -47,7 +60,7 @@ class ViewingConditions:
             d * (100.0 / b_w) + 1.0 - d,
         ]
         k = 1.0 / (5.0 * adapting_luminance + 1.0)
-        k4 = k**4
+        k4 = k * k * k * k
         k4_f = 1.0 - k4
         fl = k4 * adapting_luminance + 0.1 * k4_f * k4_f * (
             (5.0 * adapting_luminance) ** (1 / 3)
@@ -69,4 +82,5 @@ class ViewingConditions:
         aw = (2.0 * rgb_a[0] + rgb_a[1] + 0.05 * rgb_a[2]) * nbb
         return ViewingConditions(n, aw, nbb, ncb, c, nc, rgb_d, fl, pow(fl, 0.25), z)
 
-    DEFAULT = make
+
+ViewingConditions.DEFAULT = ViewingConditions.make()
