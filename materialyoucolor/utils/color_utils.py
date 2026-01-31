@@ -147,6 +147,10 @@ def argb_from_rgba(rgba: list[int]) -> int:
     return (rgba[3] << 24) | (rgba[0] << 16) | (rgba[1] << 8) | rgba[2]
 
 
+def argb_from_rgba_01(rgba: list[int]) -> int:
+    return argb_from_rgba([int(_ * 255) for _ in rgba])
+
+
 def lstar_from_argb(argb: int) -> float:
     y = xyz_from_argb(argb)[1]
     return 116.0 * lab_f(y / 100.0) - 16.0
@@ -158,6 +162,10 @@ def y_from_lstar(lstar: float) -> float:
 
 def lstar_from_y(y: float) -> float:
     return lab_f(y / 100.0) * 116.0 - 16.0
+
+
+def srgb_to_argb(srgb):
+    return int("0xff{:06X}".format(0xFFFFFF & srgb), 16)
 
 
 def linearized(rgb_component: int) -> float:
