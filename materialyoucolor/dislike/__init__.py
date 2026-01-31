@@ -1,1 +1,1 @@
-from .dislike import DislikeAnalyzer
+from .dislike_analyzer import DislikeAnalyzer

@@ -7,3 +7,5 @@ from .scheme_neutral import SchemeNeutral
 from .scheme_rainbow import SchemeRainbow
 from .scheme_tonal_spot import SchemeTonalSpot
 from .scheme_vibrant import SchemeVibrant
+from .scheme import Scheme
+from .scheme_android import SchemeAndroid

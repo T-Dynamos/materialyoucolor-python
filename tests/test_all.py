@@ -1,25 +1,24 @@
 import argparse
 import os
+import time
 
 import psutil
 from PIL import Image
 from rich.console import Console
 from rich.table import Table
 
+from materialyoucolor.dynamiccolor.color_spec import COLOR_NAMES
 from materialyoucolor.dynamiccolor.material_dynamic_colors import MaterialDynamicColors
 from materialyoucolor.hct.hct import Hct
-
-
-# non-dynamic scheme
-from materialyoucolor.scheme.scheme import Scheme
-from materialyoucolor.scheme.scheme_android import SchemeAndroid
 
 # dynamic schemes
 # import all schemes
 from materialyoucolor.scheme import *
 
+# non-dynamic scheme
+from materialyoucolor.scheme.scheme import Scheme
+from materialyoucolor.scheme.scheme_android import SchemeAndroid
 from materialyoucolor.score.score import Score
-from materialyoucolor.dynamiccolor.color_spec import COLOR_NAMES
 from materialyoucolor.utils.color_utils import hex_from_rgba, rgba_from_argb
 
 
@@ -69,8 +68,8 @@ parser.add_argument(
     "--method",
     type=str,
     choices=["pillow", "cpp"],
-    default="pillow",
-    help="Method for color quantization (default: pillow)",
+    default="cpp",
+    help="Method for color quantization (default: cpp)",
 )
 args = parser.parse_args()
 
@@ -81,7 +80,7 @@ if args.image:
 
         print("########## PILLOW METHOD ##########")
         initial_memory = get_current_rss_mb()
-        start = default_timer()
+        start = time.time()
         image = Image.open(args.image)
         pixel_len = image.width * image.height
         try:
@@ -91,7 +90,7 @@ if args.image:
         colors = QuantizeCelebi(
             [image_data[i] for i in range(0, pixel_len, args.quality)], MAX_COLOR
         )
-        end = default_timer()
+        end = time.time()
         final_memory = get_current_rss_mb()
         print(f"Color[pillow] generation took {end - start:.4f} secs")
         print(f"Peak RAM usage (Pillow): {final_memory - initial_memory:.2f} MB")
@@ -101,9 +100,9 @@ if args.image:
 
         print("########## C++ Method ##########")
         initial_memory = get_current_rss_mb()
-        start = default_timer()
+        start = time.time()
         colors = ImageQuantizeCelebi(args.image, args.quality, MAX_COLOR)
-        end = default_timer()
+        end = time.time()
         final_memory = get_current_rss_mb()
         print(f"Color[stb_image] generation took {end - start:.4f} secs")
         print(f"Peak RAM usage (C++): {final_memory - initial_memory:.2f} MB")
