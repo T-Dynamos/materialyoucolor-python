@@ -1,17 +1,17 @@
-def signum(num: float) -> float:
+def signum(num: float) -> int:
     if num < 0:
-        return -1.0
+        return -1
     elif num == 0:
-        return 0.0
+        return 0
     else:
-        return 1.0
+        return 1
 
 
 def lerp(start: float, stop: float, amount: float) -> float:
     return (1.0 - amount) * start + amount * stop
 
 
-def clamp_int(min_val: float, max_val: float, input_val: float) -> float:
+def clamp_int(min_val: int, max_val: int, input_val: int) -> int:
     if input_val < min_val:
         return min_val
     elif input_val > max_val:
@@ -27,17 +27,17 @@ def clamp_double(min_val: float, max_val: float, input_val: float) -> float:
     return input_val
 
 
-def sanitize_degrees_int(degrees: float) -> float:
-    degrees = degrees % 360.0
+def sanitize_degrees_int(degrees: int) -> int:
+    degrees = degrees % 360
     if degrees < 0:
-        degrees += 360.0
+        degrees = degrees + 360
     return degrees
 
 
 def sanitize_degrees_double(degrees: float) -> float:
     degrees = degrees % 360.0
     if degrees < 0:
-        degrees += 360.0
+        degrees = degrees + 360.0
     return degrees
 
 

@@ -1,5 +1,5 @@
+from materialyoucolor.utils.color_utils import lstar_from_y, y_from_lstar
 from materialyoucolor.utils.math_utils import clamp_double
-from materialyoucolor.utils.color_utils import y_from_lstar, lstar_from_y
 
 
 class Contrast:
@@ -11,7 +11,7 @@ class Contrast:
 
     @staticmethod
     def ratio_of_ys(y1: float, y2: float) -> float:
-        lighter = y1 if y1 > y2 else y2
+        lighter = max(y1, y2)
         darker = y1 if lighter == y2 else y2
         return (lighter + 5.0) / (darker + 5.0)
 
@@ -25,11 +25,12 @@ class Contrast:
         real_contrast = Contrast.ratio_of_ys(light_y, dark_y)
         delta = abs(real_contrast - ratio)
         if real_contrast < ratio and delta > 0.04:
-            return -1
+            return -1.0
 
         return_value = lstar_from_y(light_y) + 0.4
         if return_value < 0 or return_value > 100:
             return -1.0
+
         return return_value
 
     @staticmethod
@@ -38,24 +39,25 @@ class Contrast:
             return -1.0
 
         light_y = y_from_lstar(tone)
-        dark_y = (light_y + 5.0) / ratio - 5.0
+        dark_y = ((light_y + 5.0) / ratio) - 5.0
         real_contrast = Contrast.ratio_of_ys(light_y, dark_y)
 
         delta = abs(real_contrast - ratio)
         if real_contrast < ratio and delta > 0.04:
-            return -1
+            return -1.0
 
         return_value = lstar_from_y(dark_y) - 0.4
-        if return_value < 0 or return_value > 100:
-            return -1
+        if return_value < 0.0 or return_value > 100.0:
+            return -1.0
+
         return return_value
 
     @staticmethod
-    def lighter_unsafe(tone, ratio):
+    def lighter_unsafe(tone: float, ratio: float) -> float:
         lighter_safe = Contrast.lighter(tone, ratio)
         return 100.0 if lighter_safe < 0.0 else lighter_safe
 
     @staticmethod
-    def darker_unsafe(tone, ratio):
+    def darker_unsafe(tone: float, ratio: float) -> float:
         darker_safe = Contrast.darker(tone, ratio)
         return 0.0 if darker_safe < 0.0 else darker_safe

@@ -96,3 +96,6 @@ class SchemeAndroid:
                 "scrim": core.n1.tone(80),
             }
         )
+
+    def to_json(self):
+        return self.props

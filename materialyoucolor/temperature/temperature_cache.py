@@ -1,49 +1,51 @@
 import math
-from materialyoucolor.hct import Hct
-from materialyoucolor.utils.math_utils import (
-    sanitize_degrees_int,
-    sanitize_degrees_double,
-)
+from typing import Dict, List, Optional
+
+from materialyoucolor.hct.hct import Hct
 from materialyoucolor.utils.color_utils import lab_from_argb
+from materialyoucolor.utils.math_utils import (
+    sanitize_degrees_double,
+    sanitize_degrees_int,
+)
 
 
 class TemperatureCache:
     def __init__(self, input_hct: Hct):
-        self.input_hct = input_hct
-        self.hcts_by_temp_cache = []
-        self.hcts_by_hue_cache = []
-        self.temps_by_hct_cache = {}
-        self.input_hct_relative_temperature_cache = -1.0
-        self.complement_cache = None
+        self.input = input_hct
+        self.hcts_by_temp_cache: List[Hct] = []
+        self.hcts_by_hue_cache: List[Hct] = []
+        self.temps_by_hct_cache: Dict[Hct, float] = {}
+        self.input_relative_temperature_cache: float = -1.0
+        self.complement_cache: Optional[Hct] = None
 
     @property
-    def hcts_by_temp(self):
-        if self.hcts_by_temp_cache:
+    def hcts_by_temp(self) -> List[Hct]:
+        if len(self.hcts_by_temp_cache) > 0:
             return self.hcts_by_temp_cache
 
-        hcts = self.hcts_by_hue + [self.input_hct]
+        hcts = self.hcts_by_hue + [self.input]
         temperatures_by_hct = self.temps_by_hct
-        hcts.sort(key=lambda x: temperatures_by_hct[x])
+        hcts.sort(key=lambda x: temperatures_by_hct.get(x, 0.0))
         self.hcts_by_temp_cache = hcts
         return hcts
 
     @property
     def warmest(self) -> Hct:
-        return self.hcts_by_temp[-1]
+        return self.hcts_by_temp[len(self.hcts_by_temp) - 1]
 
     @property
     def coldest(self) -> Hct:
         return self.hcts_by_temp[0]
 
-    def analogous(self, count: int, divisions: int) -> list:
-        start_hue = round(self.input_hct.hue)
+    def analogous(self, count: int = 5, divisions: int = 12) -> List[Hct]:
+        start_hue = round(self.input.hue)
         start_hct = self.hcts_by_hue[start_hue]
         last_temp = self.relative_temperature(start_hct)
         all_colors = [start_hct]
 
         absolute_total_temp_delta = 0.0
         for i in range(360):
-            hue = int(sanitize_degrees_int(start_hue + i))
+            hue = sanitize_degrees_int(start_hue + i)
             hct = self.hcts_by_hue[hue]
             temp = self.relative_temperature(hct)
             temp_delta = abs(temp - last_temp)
@@ -56,7 +58,7 @@ class TemperatureCache:
         last_temp = self.relative_temperature(start_hct)
 
         while len(all_colors) < divisions:
-            hue = int(sanitize_degrees_int(start_hue + hue_addend))
+            hue = sanitize_degrees_int(start_hue + hue_addend)
             hct = self.hcts_by_hue[hue]
             temp = self.relative_temperature(hct)
             temp_delta = abs(temp - last_temp)
@@ -82,9 +84,9 @@ class TemperatureCache:
                     all_colors.append(hct)
                 break
 
-        answers = [self.input_hct]
+        answers = [self.input]
 
-        increase_hue_count = int((count - 1) / 2.0)
+        increase_hue_count = math.floor((count - 1) / 2.0)
         for i in range(1, increase_hue_count + 1):
             index = 0 - i
             while index < 0:
@@ -104,27 +106,28 @@ class TemperatureCache:
 
         return answers
 
+    @property
     def complement(self) -> Hct:
         if self.complement_cache is not None:
             return self.complement_cache
 
         coldest_hue = self.coldest.hue
-        coldest_temp = self.temps_by_hct[self.coldest]
+        coldest_temp = self.temps_by_hct.get(self.coldest, 0.0)
 
         warmest_hue = self.warmest.hue
-        warmest_temp = self.temps_by_hct[self.warmest]
+        warmest_temp = self.temps_by_hct.get(self.warmest, 0.0)
         range_temp = warmest_temp - coldest_temp
         start_hue_is_coldest_to_warmest = TemperatureCache.is_between(
-            self.input_hct.hue, coldest_hue, warmest_hue
+            self.input.hue, coldest_hue, warmest_hue
         )
         start_hue = warmest_hue if start_hue_is_coldest_to_warmest else coldest_hue
         end_hue = coldest_hue if start_hue_is_coldest_to_warmest else warmest_hue
         direction_of_rotation = 1.0
         smallest_error = 1000.0
-        answer = self.hcts_by_hue[round(self.input_hct.hue)]
+        answer = self.hcts_by_hue[round(self.input.hue)]
 
         complement_relative_temp = 1.0 - self.input_relative_temperature
-        for hue_addend in range(0, 360):
+        for hue_addend in range(0, 361):
             hue = sanitize_degrees_double(
                 start_hue + direction_of_rotation * hue_addend
             )
@@ -132,7 +135,7 @@ class TemperatureCache:
                 continue
             possible_answer = self.hcts_by_hue[round(hue)]
             relative_temp = (
-                self.temps_by_hct[possible_answer] - coldest_temp
+                self.temps_by_hct.get(possible_answer, 0.0) - coldest_temp
             ) / range_temp
             error = abs(complement_relative_temp - relative_temp)
             if error < smallest_error:
@@ -143,30 +146,30 @@ class TemperatureCache:
         return self.complement_cache
 
     def relative_temperature(self, hct: Hct) -> float:
-        range_temp = self.temps_by_hct[self.warmest] - self.temps_by_hct[self.coldest]
-        difference_from_coldest = (
-            self.temps_by_hct[hct] - self.temps_by_hct[self.coldest]
+        range_temp = self.temps_by_hct.get(self.warmest, 0.0) - self.temps_by_hct.get(
+            self.coldest, 0.0
         )
+        difference_from_coldest = self.temps_by_hct.get(
+            hct, 0.0
+        ) - self.temps_by_hct.get(self.coldest, 0.0)
         if range_temp == 0.0:
             return 0.5
         return difference_from_coldest / range_temp
 
     @property
     def input_relative_temperature(self) -> float:
-        if self.input_hct_relative_temperature_cache >= 0.0:
-            return self.input_hct_relative_temperature_cache
+        if self.input_relative_temperature_cache >= 0.0:
+            return self.input_relative_temperature_cache
 
-        self.input_hct_relative_temperature_cache = self.relative_temperature(
-            self.input_hct
-        )
-        return self.input_hct_relative_temperature_cache
+        self.input_relative_temperature_cache = self.relative_temperature(self.input)
+        return self.input_relative_temperature_cache
 
     @property
-    def temps_by_hct(self) -> dict[Hct:float]:
-        if self.temps_by_hct_cache:
+    def temps_by_hct(self) -> Dict[Hct, float]:
+        if len(self.temps_by_hct_cache) > 0:
             return self.temps_by_hct_cache
 
-        all_hcts = self.hcts_by_hue + [self.input_hct]
+        all_hcts = self.hcts_by_hue + [self.input]
         temperatures_by_hct = {}
         for e in all_hcts:
             temperatures_by_hct[e] = TemperatureCache.raw_temperature(e)
@@ -175,12 +178,12 @@ class TemperatureCache:
         return temperatures_by_hct
 
     @property
-    def hcts_by_hue(self) -> list[Hct]:
-        if self.hcts_by_hue_cache:
+    def hcts_by_hue(self) -> List[Hct]:
+        if len(self.hcts_by_hue_cache) > 0:
             return self.hcts_by_hue_cache
 
         hcts = [
-            Hct.from_hct(hue, self.input_hct.chroma, self.input_hct.tone)
+            Hct.from_hct(float(hue), self.input.chroma, self.input.tone)
             for hue in range(0, 361)
         ]
         self.hcts_by_hue_cache = hcts

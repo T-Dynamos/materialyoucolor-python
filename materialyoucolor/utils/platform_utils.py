@@ -1,49 +1,44 @@
 import json
+import math
 import os
 from glob import glob as path_find
-import math
 from timeit import default_timer
 
-from materialyoucolor.scheme.scheme_tonal_spot import SchemeTonalSpot
+from materialyoucolor.hct import Hct
+from materialyoucolor.palettes.tonal_palette import TonalPalette
+from materialyoucolor.dynamiccolor.dynamic_scheme import (
+    DynamicScheme,
+)
+from materialyoucolor.dynamiccolor.variant import Variant
+from materialyoucolor.scheme.scheme_content import SchemeContent
 from materialyoucolor.scheme.scheme_expressive import SchemeExpressive
+from materialyoucolor.scheme.scheme_fidelity import SchemeFidelity
 from materialyoucolor.scheme.scheme_fruit_salad import SchemeFruitSalad
 from materialyoucolor.scheme.scheme_monochrome import SchemeMonochrome
-from materialyoucolor.scheme.scheme_rainbow import SchemeRainbow
-from materialyoucolor.scheme.scheme_vibrant import SchemeVibrant
 from materialyoucolor.scheme.scheme_neutral import SchemeNeutral
-from materialyoucolor.scheme.scheme_fidelity import SchemeFidelity
-from materialyoucolor.scheme.scheme_content import SchemeContent
-
-from materialyoucolor.scheme.dynamic_scheme import DynamicSchemeOptions, DynamicScheme
-from materialyoucolor.palettes.tonal_palette import TonalPalette
-from materialyoucolor.scheme.variant import Variant
+from materialyoucolor.scheme.scheme_rainbow import SchemeRainbow
+from materialyoucolor.scheme.scheme_tonal_spot import SchemeTonalSpot
+from materialyoucolor.scheme.scheme_vibrant import SchemeVibrant
+from materialyoucolor.score.score import Score
 from materialyoucolor.utils.color_utils import argb_from_rgba_01, srgb_to_argb
 from materialyoucolor.utils.math_utils import sanitize_degrees_double
-from materialyoucolor.hct import Hct
-from materialyoucolor.score.score import Score
-from materialyoucolor.dynamiccolor.material_dynamic_colors import MaterialDynamicColors
 
 try:
-    from materialyoucolor.quantize import QuantizeCelebi
+    from materialyoucolor.quantize import ImageQuantizeCelebi
 except:
-    QuantizeCelebi = None
+    ImageQuantizeCelebi = None
 
 autoclass = None
 _is_android = "ANDROID_ARGUMENT" in os.environ
 
 if _is_android:
-    from jnius import autoclass
     from android import mActivity
+    from jnius import autoclass
 
     Integer = autoclass("java.lang.Integer")
     BuildVERSION = autoclass("android.os.Build$VERSION")
     context = mActivity.getApplicationContext()
     WallpaperManager = autoclass("android.app.WallpaperManager").getInstance(mActivity)
-
-try:
-    from PIL import Image
-except Exception:
-    Image = None
 
 SCHEMES = {
     "TONAL_SPOT": SchemeTonalSpot,
@@ -156,39 +151,32 @@ def _get_android_12_above(
         logger("Got system theme style '{}'".format(selected_scheme))
 
     # Get system colors
-    get_system_color = lambda color_name: srgb_to_argb(
-        context.getColor(
-            context.getResources().getIdentifier(
-                COLOR_NAMES[color_name].format(APPROX_TONE),
-                "color",
-                "android",
+    def get_system_color(color_name):
+        return srgb_to_argb(
+            context.getColor(
+                context.getResources().getIdentifier(
+                    COLOR_NAMES[color_name].format(APPROX_TONE),
+                    "color",
+                    "android",
+                )
             )
         )
-    )
+
     color_names = COLOR_NAMES.copy()
     for color_name in COLOR_NAMES.keys():
         hct = Hct.from_int(get_system_color(color_name))
         color_names[color_name] = TonalPalette.from_hue_and_chroma(hct.hue, hct.chroma)
 
     return DynamicScheme(
-        DynamicSchemeOptions(
-            reverse_color_from_primary(
-                get_system_color("primary_palette"),
-                selected_scheme,
-            ),
-            getattr(Variant, selected_scheme),
-            contrast,
-            dark_mode,
-            **color_names,
-        )
+        reverse_color_from_primary(
+            get_system_color("primary_palette"),
+            selected_scheme,
+        ),
+        getattr(Variant, selected_scheme),
+        contrast,
+        dark_mode,
+        **color_names,
     )
-
-
-def open_wallpaper_file(file_path) -> Image:
-    try:
-        return Image.open(file_path)
-    except Exception:
-        return None
 
 
 def get_dynamic_scheme(
@@ -204,7 +192,8 @@ def get_dynamic_scheme(
     message_logger=print,
     logger_head="MaterialYouColor",
 ) -> DynamicScheme:
-    logger = lambda message: message_logger(logger_head + " : " + message)
+    def logger(message):
+        return message_logger(logger_head + " : " + message)
 
     selected_scheme = None
     selected_color = None
@@ -276,31 +265,17 @@ def get_dynamic_scheme(
         not selected_scheme
         and not selected_color
         and fallback_wallpaper_path
-        and (image := open_wallpaper_file(fallback_wallpaper_path))
-        and QuantizeCelebi is not None
+        and ImageQuantizeCelebi is not None
     ):
         timer_start = default_timer()
-        pixel_len = image.width * image.height
-        image_data = image.getdata()
-        # TODO: Think about getting data from bitmap
-        pixel_array = [
-            image_data[_]
-            for _ in range(
-                0, pixel_len, dynamic_color_quality if not _is_android else 1
-            )
-        ]
-        logger(
-            f"Created an array of pixels from a "
-            f"system wallpaper file - {default_timer() - timer_start} sec."
-        )
-        timer_start = default_timer()
-        colors = QuantizeCelebi(pixel_array, 128)
+        colors = ImageQuantizeCelebi(fallback_wallpaper_path, dynamic_color_quality)
         selected_color = Score.score(colors)[0]
         WALLPAPER_CACHE[fallback_wallpaper_path] = [
             selected_color,
             os.path.getsize(fallback_wallpaper_path),
         ]
-        logger(f"Got dominant colors - " f"{default_timer() - timer_start} sec.")
+
+        logger(f"Got dominant colors - {default_timer() - timer_start} sec.")
 
     return (
         (

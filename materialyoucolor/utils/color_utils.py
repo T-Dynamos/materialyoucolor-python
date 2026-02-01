@@ -1,4 +1,6 @@
-from materialyoucolor.utils.math_utils import matrix_multiply, clamp_int
+import math
+
+from materialyoucolor.utils.math_utils import clamp_int, matrix_multiply
 
 SRGB_TO_XYZ = [
     [0.41233895, 0.35762064, 0.18051042],
@@ -27,10 +29,8 @@ XYZ_TO_SRGB = [
 WHITE_POINT_D65 = [95.047, 100.0, 108.883]
 
 
-def argb_from_rgb(red: float, green: float, blue: float, alpha=255) -> int:
-    return (
-        alpha << 24 | (int(red) & 255) << 16 | (int(green) & 255) << 8 | int(blue) & 255
-    )
+def argb_from_rgb(red: int, green: int, blue: int) -> int:
+    return 255 << 24 | (red & 255) << 16 | (green & 255) << 8 | blue & 255
 
 
 def argb_from_linrgb(linrgb: list[float]) -> int:
@@ -40,27 +40,27 @@ def argb_from_linrgb(linrgb: list[float]) -> int:
     return argb_from_rgb(r, g, b)
 
 
-def alpha_from_argb(argb) -> float:
+def alpha_from_argb(argb: int) -> int:
     return (argb >> 24) & 255
 
 
-def red_from_argb(argb) -> float:
+def red_from_argb(argb: int) -> int:
     return (argb >> 16) & 255
 
 
-def green_from_argb(argb) -> float:
+def green_from_argb(argb: int) -> int:
     return (argb >> 8) & 255
 
 
-def blue_from_argb(argb) -> float:
+def blue_from_argb(argb: int) -> int:
     return argb & 255
 
 
-def is_opaque(argb) -> bool:
+def is_opaque(argb: int) -> bool:
     return alpha_from_argb(argb) >= 255
 
 
-def argb_from_xyz(x, y, z) -> int:
+def argb_from_xyz(x: float, y: float, z: float) -> int:
     matrix = XYZ_TO_SRGB
     linear_r = matrix[0][0] * x + matrix[0][1] * y + matrix[0][2] * z
     linear_g = matrix[1][0] * x + matrix[1][1] * y + matrix[1][2] * z
@@ -71,14 +71,14 @@ def argb_from_xyz(x, y, z) -> int:
     return argb_from_rgb(r, g, b)
 
 
-def xyz_from_argb(argb) -> list[float]:
+def xyz_from_argb(argb: int) -> list[float]:
     r = linearized(red_from_argb(argb))
     g = linearized(green_from_argb(argb))
     b = linearized(blue_from_argb(argb))
     return matrix_multiply([r, g, b], SRGB_TO_XYZ)
 
 
-def argb_from_lab(l, a, b) -> float:
+def argb_from_lab(l: float, a: float, b: float) -> int:
     white_point = WHITE_POINT_D65
     fy = (l + 16.0) / 116.0
     fx = a / 500.0 + fy
@@ -119,52 +119,7 @@ def argb_from_lstar(lstar: float) -> int:
     return argb_from_rgb(component, component, component)
 
 
-def lstar_from_argb(argb: int) -> float:
-    y = xyz_from_argb(argb)[1]
-    return 116.0 * lab_f(y / 100.0) - 16.0
-
-
-def y_from_lstar(lstar: float) -> float:
-    return 100.0 * lab_invf((lstar + 16.0) / 116.0)
-
-
-def srgb_to_argb(srgb):
-    return int("0xff{:06X}".format(0xFFFFFF & srgb), 16)
-
-
-def lstar_from_y(y: float) -> float:
-    return lab_f(y / 100.0) * 116.0 - 16.0
-
-
-def linearized(rgb_component: float) -> float:
-    normalized = rgb_component / 255.0
-    if normalized <= 0.040449936:
-        return normalized / 12.92 * 100.0
-    else:
-        return pow((normalized + 0.055) / 1.055, 2.4) * 100.0
-
-
-def delinearized(rgb_component: float) -> float:
-    normalized = rgb_component / 100.0
-    if normalized <= 0.0031308:
-        delinearized = normalized * 12.92
-    else:
-        delinearized = 1.055 * pow(normalized, 1.0 / 2.4) - 0.055
-    return clamp_int(0, 255, round(delinearized * 255))
-
-
-def white_point_d65() -> list[float]:
-    return WHITE_POINT_D65
-
-
-class Rgba:
-    r: float
-    g: float
-    b: float
-    a: float
-
-
-def rgba_from_argb(argb: int) -> list[float]:
+def rgba_from_argb(argb: int) -> list[int]:
     r = red_from_argb(argb)
     g = green_from_argb(argb)
     b = blue_from_argb(argb)
@@ -172,16 +127,12 @@ def rgba_from_argb(argb: int) -> list[float]:
     return [r, g, b, a]
 
 
-def argb_from_rgba(rgba: list[int]) -> int:
-    r_value = clamp_component(rgba[0])
-    g_value = clamp_component(rgba[1])
-    b_value = clamp_component(rgba[2])
-    a_value = clamp_component(rgba[3])
-    return (a_value << 24) | (r_value << 16) | (g_value << 8) | b_value
+def hex_from_rgba(rgba: list[int]):
+    return "#{:02X}{:02X}{:02X}{:02X}".format(*rgba)
 
 
-def argb_from_rgba_01(rgba: list[int]) -> int:
-    return argb_from_rgba([int(_ * 255) for _ in rgba])
+def hex_from_argb(argb: int) -> str:
+    return hex_from_rgba(rgba_from_argb(argb))
 
 
 def clamp_component(value: int) -> int:
@@ -192,11 +143,58 @@ def clamp_component(value: int) -> int:
     return value
 
 
+def argb_from_rgba(rgba: list[int]) -> int:
+    return (rgba[3] << 24) | (rgba[0] << 16) | (rgba[1] << 8) | rgba[2]
+
+
+def argb_from_rgba_01(rgba: list[int]) -> int:
+    return argb_from_rgba([int(_ * 255) for _ in rgba])
+
+
+def lstar_from_argb(argb: int) -> float:
+    y = xyz_from_argb(argb)[1]
+    return 116.0 * lab_f(y / 100.0) - 16.0
+
+
+def y_from_lstar(lstar: float) -> float:
+    return 100.0 * lab_invf((lstar + 16.0) / 116.0)
+
+
+def lstar_from_y(y: float) -> float:
+    return lab_f(y / 100.0) * 116.0 - 16.0
+
+
+def srgb_to_argb(srgb):
+    return int("0xff{:06X}".format(0xFFFFFF & srgb), 16)
+
+
+def linearized(rgb_component: int) -> float:
+    normalized = rgb_component / 255.0
+    if normalized <= 0.040449936:
+        return normalized / 12.92 * 100.0
+    else:
+        return math.pow((normalized + 0.055) / 1.055, 2.4) * 100.0
+
+
+def delinearized(rgb_component: float) -> int:
+    normalized = rgb_component / 100.0
+    delinearized_val = 0.0
+    if normalized <= 0.0031308:
+        delinearized_val = normalized * 12.92
+    else:
+        delinearized_val = 1.055 * math.pow(normalized, 1.0 / 2.4) - 0.055
+    return clamp_int(0, 255, round(delinearized_val * 255.0))
+
+
+def white_point_d65() -> list[float]:
+    return WHITE_POINT_D65
+
+
 def lab_f(t: float) -> float:
     e = 216.0 / 24389.0
     kappa = 24389.0 / 27.0
     if t > e:
-        return pow(t, 1.0 / 3.0)
+        return math.pow(t, 1.0 / 3.0)
     else:
         return (kappa * t + 16) / 116
 
