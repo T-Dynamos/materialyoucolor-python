@@ -3,9 +3,6 @@ name: Build and Test Wheels
 on:
   pull_request:
   push:
-    branches:
-      - main
-      - update
     tags:
       - 'v*'
 
@@ -39,9 +36,9 @@ jobs:
         CIBW_BEFORE_TEST: >
           pip install -r {project}/requirements.txt -r {project}/requirements-dev.txt
         CIBW_TEST_COMMAND: >
-          curl -L -o /tmp/test_image.jpg "https://unsplash.com/photos/zQLd8RXbenw/download?ixid=M3wxMjA3fDB8MXx0b3BpY3x8NnNNVmpUTFNrZVF8fHx8fDJ8fDE3MzY0MDA3NTd8&force=true&w=2400" &&
-          python {project}/tests/test_all.py --image /tmp/test_image.jpg --quality 1 --method pillow --tonal-spot &&
-          python {project}/tests/test_all.py --image /tmp/test_image.jpg --quality 1 --method cpp --tonal-spot
+          curl -L -o test_image.jpg "https://raw.githubusercontent.com/mohammadimtiazz/standard-test-images-for-Image-Processing/refs/heads/master/standard_test_images/tulips.png" &&
+          python {project}/tests/test_all.py --image test_image.jpg --quality 1 --method pillow --tonal-spot &&
+          python {project}/tests/test_all.py --image test_image.jpg --quality 1 --method cpp --tonal-spot
         CIBW_BEFORE_BUILD: >
           pip install setuptools wheel
         CIBW_ENVIRONMENT: >
