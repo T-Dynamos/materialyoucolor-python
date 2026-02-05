@@ -209,7 +209,9 @@ These are some libraries which use this library for color generattion.
 
 * [`EarthFM CLONE`]
 
-<img width="270" height="480" alt="image" src="https://private-user-images.githubusercontent.com/68729523/516392752-7f8a2b2e-d81f-4c2c-8550-c55dea07c5bb.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3Njk4NzQyNTksIm5iZiI6MTc2OTg3Mzk1OSwicGF0aCI6Ii82ODcyOTUyMy81MTYzOTI3NTItN2Y4YTJiMmUtZDgxZi00YzJjLTg1NTAtYzU1ZGVhMDdjNWJiLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjAxMzElMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYwMTMxVDE1MzkxOVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWQyZmVlMTllZThjYjgxN2M1ZjVhYmFjYjRjMmM3MTZmMDQ3ZTdkODI2YTQwZGNmNWNhNWE3MjJmMWFhZDg2YmMmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0._zSJgVinO01zMsG8pgJ7x0NZ914vVNy2vNnN8b7BoCA" />
+  
+<img width="270" height="480" alt="516392752-7f8a2b2e-d81f-4c2c-8550-c55dea07c5bb" src="https://github.com/user-attachments/assets/50d9b837-4b49-44b9-9e47-8efd593a4550" />
+
 
 > This is my private project where the theme colors change based on the album art.
 
