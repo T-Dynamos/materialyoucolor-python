@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List
 
 from materialyoucolor.dynamiccolor.color_spec import (
     COLOR_NAMES,
@@ -8,7 +8,6 @@ from materialyoucolor.dynamiccolor.color_spec import (
     get_spec,
 )
 from materialyoucolor.dynamiccolor.dynamic_color import DynamicColor
-from materialyoucolor.dynamiccolor.dynamic_scheme import DynamicScheme
 
 
 class MaterialDynamicColors:
@@ -16,14 +15,16 @@ class MaterialDynamicColors:
 
     def __init__(self, spec="2025"):
         self.color_spec: ColorSpecDelegate = get_spec(spec)
-
-    # define them dynamically
-    for color_name in COLOR_NAMES:
-        exec(
-            f"@property\ndef {color_name}(self) -> DynamicColor:\n\treturn self.color_spec.{color_name}()"
-        )
+        for name in COLOR_NAMES:
+            setattr(self, name, getattr(self.color_spec, name)())
 
     @property
     def all_colors(self) -> List[DynamicColor]:
         colors = [getattr(self, _) for _ in COLOR_NAMES]
         return [c for c in colors if c is not None]
+
+
+# backward compatibility class attrs
+_spec = get_spec("2025")
+for name in COLOR_NAMES:
+    setattr(MaterialDynamicColors, name, getattr(_spec, name)())
