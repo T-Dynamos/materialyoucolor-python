@@ -3,8 +3,6 @@ name: Build and Test Wheels
 on:
   pull_request:
   push:
-    tags:
-      - 'v*'
 
 jobs:
   build_wheels:
