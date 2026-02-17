@@ -23,7 +23,6 @@ class MaterialDynamicColors:
         colors = [getattr(self, _) for _ in COLOR_NAMES]
         return [c for c in colors if c is not None]
 
-
 # backward compatibility class attrs
 _spec = get_spec("2025")
 for name in COLOR_NAMES:
