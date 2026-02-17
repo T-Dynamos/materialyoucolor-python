@@ -61,11 +61,11 @@ jobs:
     - name: Download all wheels
       uses: actions/download-artifact@v4
       with:
+        pattern: cibuildwheel-wheels-*
+        merge-multiple: true
         path: dist
 
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
         packages_dir: dist
