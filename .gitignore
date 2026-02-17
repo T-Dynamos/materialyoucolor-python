@@ -6,3 +6,4 @@ materialyoucolor/quantize
 __pycache__
 *.pyc
 image.jpg
+tests/compare*

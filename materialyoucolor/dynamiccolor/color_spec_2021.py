@@ -263,7 +263,11 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
         return DynamicColor.from_palette(
             name="primary",
             palette=lambda s: s.primary_palette,
-            tone=lambda s: 100 if is_monochrome(s) else (80 if s.is_dark else 40),
+            tone=lambda s: (
+                (100 if s.is_dark else 0)
+                if is_monochrome(s)
+                else (80 if s.is_dark else 40)
+            ),
             is_background=True,
             background=lambda s: self.highestSurface(s),
             contrast_curve=lambda s: ContrastCurve(3, 4.5, 7, 7),
@@ -279,7 +283,11 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
         return DynamicColor.from_palette(
             name="onPrimary",
             palette=lambda s: s.primary_palette,
-            tone=lambda s: 10 if is_monochrome(s) else (20 if s.is_dark else 100),
+            tone=lambda s: (
+                (10 if s.is_dark else 90)
+                if is_monochrome(s)
+                else (20 if s.is_dark else 100)
+            ),
             background=lambda s: self.primary(),
             contrast_curve=lambda s: ContrastCurve(4.5, 7, 11, 21),
         )
@@ -291,7 +299,11 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
             tone=lambda s: (
                 s.source_color_hct.tone
                 if is_fidelity(s)
-                else (85 if is_monochrome(s) else (30 if s.is_dark else 90))
+                else (
+                    (85 if s.is_dark else 25)
+                    if is_monochrome(s)
+                    else (30 if s.is_dark else 90)
+                )
             ),
             is_background=True,
             background=lambda s: self.highestSurface(s),
@@ -308,7 +320,11 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
             tone=lambda s: (
                 DynamicColor.foreground_tone(self.primaryContainer().tone(s), 4.5)
                 if is_fidelity(s)
-                else (0 if is_monochrome(s) else (90 if s.is_dark else 30))
+                else (
+                    (0 if s.is_dark else 100)
+                    if is_monochrome(s)
+                    else (90 if s.is_dark else 30)
+                )
             ),
             background=lambda s: self.primaryContainer(),
             contrast_curve=lambda s: ContrastCurve(3, 4.5, 7, 11),
@@ -343,7 +359,11 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
         return DynamicColor.from_palette(
             name="onSecondary",
             palette=lambda s: s.secondary_palette,
-            tone=lambda s: 10 if is_monochrome(s) else (20 if s.is_dark else 100),
+            tone=lambda s: (
+                (10 if s.is_dark else 100)
+                if is_monochrome(s)
+                else (20 if s.is_dark else 100)
+            ),
             background=lambda s: self.secondary(),
             contrast_curve=lambda s: ContrastCurve(4.5, 7, 11, 21),
         )
@@ -353,7 +373,7 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
             name="secondaryContainer",
             palette=lambda s: s.secondary_palette,
             tone=lambda s: (
-                30
+                (30 if s.is_dark else 85)
                 if is_monochrome(s)
                 else (
                     find_desired_chroma_by_tone(
@@ -379,7 +399,7 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
             name="onSecondaryContainer",
             palette=lambda s: s.secondary_palette,
             tone=lambda s: (
-                90
+                (90 if s.is_dark else 10)
                 if is_monochrome(s)
                 else (
                     DynamicColor.foreground_tone(self.secondaryContainer().tone(s), 4.5)
@@ -395,9 +415,11 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
         return DynamicColor.from_palette(
             name="tertiary",
             palette=lambda s: s.tertiary_palette,
-            tone=lambda s: 90
-            if is_monochrome(s)
-            else (25 if is_monochrome(s) else (80 if s.is_dark else 40)),
+            tone=lambda s: (
+                (90 if s.is_dark else 25)
+                if is_monochrome(s)
+                else (80 if s.is_dark else 40)
+            ),
             is_background=True,
             background=lambda s: self.highestSurface(s),
             contrast_curve=lambda s: ContrastCurve(3, 4.5, 7, 7),
@@ -413,9 +435,11 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
         return DynamicColor.from_palette(
             name="onTertiary",
             palette=lambda s: s.tertiary_palette,
-            tone=lambda s: 10
-            if is_monochrome(s)
-            else (90 if is_monochrome(s) else (20 if s.is_dark else 100)),
+            tone=lambda s: (
+                (10 if s.is_dark else 90)
+                if is_monochrome(s)
+                else (20 if s.is_dark else 100)
+            ),
             background=lambda s: self.tertiary(),
             contrast_curve=lambda s: ContrastCurve(4.5, 7, 11, 21),
         )
@@ -425,7 +449,7 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
             name="tertiaryContainer",
             palette=lambda s: s.tertiary_palette,
             tone=lambda s: (
-                60
+                (60 if s.is_dark else 49)
                 if is_monochrome(s)
                 else (
                     DislikeAnalyzer.fix_if_disliked(
@@ -448,7 +472,7 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
             name="onTertiaryContainer",
             palette=lambda s: s.tertiary_palette,
             tone=lambda s: (
-                0
+                (0 if s.is_dark else 100)
                 if is_monochrome(s)
                 else (
                     DynamicColor.foreground_tone(self.tertiaryContainer().tone(s), 4.5)
@@ -502,9 +526,11 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
         return DynamicColor.from_palette(
             name="onErrorContainer",
             palette=lambda s: s.error_palette,
-            tone=lambda s: 90
-            if is_monochrome(s)
-            else (10 if is_monochrome(s) else (90 if s.is_dark else 30)),
+            tone=lambda s: (
+                (90 if s.is_dark else 10)
+                if is_monochrome(s)
+                else (90 if s.is_dark else 30)
+            ),
             background=lambda s: self.errorContainer(),
             contrast_curve=lambda s: ContrastCurve(3, 4.5, 7, 11),
         )

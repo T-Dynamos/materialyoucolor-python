@@ -98,6 +98,10 @@ class DynamicColor(FromPaletteOptions):
 
     @classmethod
     def from_palette(cls, *args, **kwargs) -> "DynamicColor":
+        if "tone" not in kwargs or kwargs.get("tone") is None:
+            kwargs["tone"] = cls.get_initial_tone_from_background(
+                kwargs.get("background")
+            )
         return cls(*args, **kwargs)
 
     @staticmethod

@@ -275,6 +275,11 @@ class ColorCalculationDelegateImpl2021(ColorCalculationDelegate):
 
 
 class ColorCalculationDelegateImpl2025(ColorCalculationDelegate):
+    @staticmethod
+    def _is_fixed_dim_name(name: str) -> bool:
+        lowered = name.lower()
+        return lowered.endswith("_fixed_dim") or lowered.endswith("fixeddim")
+
     def get_hct(self, scheme: "DynamicScheme", color: "DynamicColor") -> "Hct":
         palette = color.palette(scheme)
         tone = color.get_tone(scheme)
@@ -345,7 +350,7 @@ class ColorCalculationDelegateImpl2025(ColorCalculationDelegate):
                         else DynamicColor.foreground_tone(bg_tone, self_contrast)
                     )
 
-            if color.is_background and not color.name.endswith("_fixed_dim"):
+            if color.is_background and not self._is_fixed_dim_name(color.name):
                 if self_tone >= 57:
                     self_tone = clamp_double(65, 100, self_tone)
                 else:
@@ -371,7 +376,7 @@ class ColorCalculationDelegateImpl2025(ColorCalculationDelegate):
                 else DynamicColor.foreground_tone(bg_tone, desired_ratio)
             )
 
-            if color.is_background and not color.name.endswith("_fixed_dim"):
+            if color.is_background and not self._is_fixed_dim_name(color.name):
                 if answer >= 57:
                     answer = clamp_double(65, 100, answer)
                 else:
