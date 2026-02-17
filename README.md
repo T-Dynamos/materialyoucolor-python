@@ -60,7 +60,7 @@ You can easily install it from pip by executing:
 ```console
 pip3 install materialyoucolor --upgrade
 ```
-Prebuilt binaries are avaliable for `linux`, `windows` and `macos`. If prebuilt binaries aren't available, then you should manually build and install.
+Prebuilt binaries are avaliable for `linux`, `android`, `windows` and `macos`. If prebuilt binaries aren't available, then you should manually build and install.
 
 
 ### Build and install
