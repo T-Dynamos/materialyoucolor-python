@@ -84,7 +84,7 @@ Thanks :heart: to [@midn8hustlr](https://github.com/midn8hustlr) for this [AUR p
 
 Ensure these lines in `buildozer.spec`:
 ```python
-requirements = materialyoucolor==3.0.0
+requirements = materialyoucolor==3.0.2
 p4a.branch = develop
 ```
 

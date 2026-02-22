@@ -34,13 +34,11 @@ jobs:
         CIBW_BEFORE_TEST: >
           pip install -r {project}/requirements.txt -r {project}/requirements-dev.txt
         CIBW_TEST_COMMAND: >
-          curl -L -o test_image.jpg "https://raw.githubusercontent.com/mohammadimtiazz/standard-test-images-for-Image-Processing/refs/heads/master/standard_test_images/tulips.png" &&
+          python -c "from PIL import Image; Image.new('RGB', (128, 128), (70, 120, 180)).save('test_image.jpg')" &&
           python {project}/tests/test_all.py --image test_image.jpg --quality 1 --method pillow --tonal-spot &&
           python {project}/tests/test_all.py --image test_image.jpg --quality 1 --method cpp --tonal-spot
         CIBW_BEFORE_BUILD: >
-          pip install setuptools wheel
-        CIBW_ENVIRONMENT: >
-          PURE_PYTHON=False
+          pip install -U pip setuptools wheel pybind11
 
     - uses: actions/upload-artifact@v4
       with:
