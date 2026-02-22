@@ -38,7 +38,7 @@ jobs:
           python {project}/tests/test_all.py --image test_image.jpg --quality 1 --method pillow --tonal-spot &&
           python {project}/tests/test_all.py --image test_image.jpg --quality 1 --method cpp --tonal-spot
         CIBW_BEFORE_BUILD: >
-          pip install -U pip setuptools wheel pybind11
+          pip install setuptools wheel pybind11
 
     - uses: actions/upload-artifact@v4
       with:
