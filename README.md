@@ -72,13 +72,22 @@ pip3 install https://github.com/T-Dynamos/materialyoucolor-python/archive/master
 ```
 ### OS Specific
 
-#### Arch Linux (OUTDATED)
+#### Arch Linux
+#### Stable v2 (Legacy)
 
 ```console
 yay -S python-materialyoucolor
 ```
 
 Thanks :heart: to [@midn8hustlr](https://github.com/midn8hustlr) for this [AUR package](https://aur.archlinux.org/cgit/aur.git/?h=python-materialyoucolor-git).
+
+#### Material You v3 (new release)
+
+```console
+yay -S python-materialyoucolor3
+```
+Thanks to [@khushpatel00](https://github.com/khushpatel00) for this [AUR Package](https://aur.archlinux.org/packages/python-materialyoucolor3).
+
 
 #### Android (using kivy's [`buildozer`](https://github.com/kivy/buildozer))
 
