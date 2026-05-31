@@ -1,3 +1,5 @@
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/materialyoucolor?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=BLUE&left_text=downloads)](https://pepy.tech/projects/materialyoucolor)
+
 # [Material You color algorithms](https://m3.material.io/styles/color/overview) for python!
 It is built in reference with offical [typescript implementation](https://github.com/material-foundation/material-color-utilities/tree/main/typescript) except it's color quantization part, which is based on [c++ implementation](https://github.com/material-foundation/material-color-utilities/tree/main/cpp) thanks to [pybind](https://github.com/pybind).
 
