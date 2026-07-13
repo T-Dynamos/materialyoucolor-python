@@ -19,6 +19,7 @@ from materialyoucolor.scheme import *
 from materialyoucolor.scheme.scheme import Scheme
 from materialyoucolor.scheme.scheme_android import SchemeAndroid
 from materialyoucolor.score.score import Score
+from materialyoucolor.temperature.temperature_cache import TemperatureCache
 from materialyoucolor.utils.color_utils import hex_from_rgba, rgba_from_argb
 
 
@@ -118,6 +119,21 @@ else:
 
 
 selected = Score.score(colors)
+
+
+# Regression: tone extremes leave TemperatureCache with a zero temperature range,
+# which used to make complement raise ZeroDivisionError (issue #28).
+def check_tone_extremes():
+    for argb in [0xFFFFFFFF, 0xFF000000, 0xFF010101]:
+        source = Hct.from_int(argb)
+        assert TemperatureCache(source).complement.to_int() == source.to_int()
+        for spec_version in ["2021", "2025"]:
+            for is_dark in [False, True]:
+                # SchemeFidelity reaches complement via get_tertiary_palette.
+                SchemeFidelity(source, is_dark, 0.0, spec_version=spec_version)
+
+
+check_tone_extremes()
 
 if os.name == "nt":
     exit(0)
