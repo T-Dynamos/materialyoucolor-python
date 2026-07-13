@@ -117,6 +117,13 @@ class TemperatureCache:
         warmest_hue = self.warmest.hue
         warmest_temp = self.temps_by_hct.get(self.warmest, 0.0)
         range_temp = warmest_temp - coldest_temp
+
+        # At a tone extreme every hue resolves to the same color, leaving no range to
+        # divide by; return the input, as relative_temperature does in that case.
+        if range_temp == 0.0:
+            self.complement_cache = self.hcts_by_hue[round(self.input.hue)]
+            return self.complement_cache
+
         start_hue_is_coldest_to_warmest = TemperatureCache.is_between(
             self.input.hue, coldest_hue, warmest_hue
         )
