@@ -143,7 +143,6 @@ def _get_android_12_above(
     selected_scheme="TONAL_SPOT",
     contrast=0.0,
     dark_mode=False,
-    logger_head="MaterialYouColor",
 ) -> DynamicScheme:
 
     theme_settings = {}
@@ -184,29 +183,29 @@ def _get_android_12_above(
             context.getContentResolver(),
             SettingsSecure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
         )
-        logger.info(f"{logger_head}: Android settings data: '{settings_text}'")
+        logger.info(f"Android settings data: '{settings_text}'")
 
         try:
             theme_settings = json.loads(settings_text)
         except:
-            logger.info(f"{logger_head}: Trying to read settings using fallback method")
+            logger.info(f"Trying to read settings using fallback method")
             theme_settings = dict(
                 item.split(":", 1) for item in settings_text.strip("{}").split(",")
             )
     except Exception as e:
-        logger.warning(f"{logger_head}: Parse [] error occured: {e}")
+        logger.warning(f"Parse [] error occured: {e}")
 
     # Android 14 has this method
     try:
         contrast = mActivity.getSystemService(context.UI_MODE_SERVICE).getContrast()
-        logger.info(f"{logger_head}: Got contrast '{contrast}'")
+        logger.info(f"Got contrast '{contrast}'")
     except Exception:
         pass
 
     # See if system supports mutiple schemes
     if OPTION_THEME_STYLE in theme_settings.keys():
         selected_scheme = theme_settings[OPTION_THEME_STYLE]
-        logger.info(f"{logger_head}: Got system theme style '{selected_scheme}'")
+        logger.info(f"Got system theme style '{selected_scheme}'")
 
     if selected_scheme == "MONOCHROMATIC":
         selected_scheme = "MONOCHROME"
@@ -215,7 +214,7 @@ def _get_android_12_above(
         getattr(Variant, selected_scheme)
     except:
         logger.warning(
-            f"{logger_head}: invalid value for scheme: {selected_scheme} falling back to `TONAL_SPOT`"
+            f"invalid value for scheme: {selected_scheme} falling back to `TONAL_SPOT`"
         )
         selected_scheme = "TONAL_SPOT"
 
@@ -264,8 +263,15 @@ def get_dynamic_scheme(
     logger_head="MaterialYouColor",
 ) -> DynamicScheme:
 
-    if logger is None:
-        logger = MiniLogger()
+    class _Log:
+        def __init__(self, logger, head):
+            self._logger = logger if logger is not None else MiniLogger()
+            self._head = head
+        def info(self, m): self._logger.info(f"{self._head}: {m}")
+        def warning(self, m): self._logger.warning(f"{self._head}: {m}")
+        def error(self, m): self._logger.error(f"{self._head}: {m}")
+
+    logger = _Log(logger, logger_head)
 
     selected_scheme = None
     selected_color = None
@@ -274,7 +280,7 @@ def get_dynamic_scheme(
         # For Android 12 and 12+
         if BuildVERSION.SDK_INT >= 31:
             selected_scheme = _get_android_12_above(
-                logger, selected_scheme, contrast, dark_mode, logger_head=logger_head
+                logger, selected_scheme, contrast, dark_mode
             )
 
         # For Android 8.1 and 8.1+
