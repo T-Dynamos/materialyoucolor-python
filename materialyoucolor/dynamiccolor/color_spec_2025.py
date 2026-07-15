@@ -317,9 +317,11 @@ class ColorSpecDelegateImpl2025(ColorSpecDelegateImpl2021):
             return t_max_c(s.neutral_palette, 0, 100, 1.1)
         else:
             return DynamicColor.get_initial_tone_from_background(
-                lambda scheme: self.highestSurface(scheme)
-                if scheme.platform == "phone"
-                else self.surfaceContainerHigh()
+                lambda scheme: (
+                    self.highestSurface(scheme)
+                    if scheme.platform == "phone"
+                    else self.surfaceContainerHigh()
+                )
             )(s)
 
     def _on_surface_chroma_multiplier_2025(self, s: DynamicScheme) -> float:
@@ -345,9 +347,11 @@ class ColorSpecDelegateImpl2025(ColorSpecDelegateImpl2021):
             palette=lambda s: s.neutral_palette,
             tone=self._on_surface_tone_2025,
             chroma_multiplier=self._on_surface_chroma_multiplier_2025,
-            background=lambda s: self.highestSurface(s)
-            if s.platform == "phone"
-            else self.surfaceContainerHigh(),
+            background=lambda s: (
+                self.highestSurface(s)
+                if s.platform == "phone"
+                else self.surfaceContainerHigh()
+            ),
             contrast_curve=self._on_surface_contrast_curve_2025,
         )
         return extend_spec_version(super().onSurface(), "2025", color2025)
@@ -380,9 +384,11 @@ class ColorSpecDelegateImpl2025(ColorSpecDelegateImpl2021):
             name="onSurfaceVariant",
             palette=lambda s: s.neutral_palette,
             chroma_multiplier=self._on_surface_variant_chroma_multiplier_2025,
-            background=lambda s: self.highestSurface(s)
-            if s.platform == "phone"
-            else self.surfaceContainerHigh(),
+            background=lambda s: (
+                self.highestSurface(s)
+                if s.platform == "phone"
+                else self.surfaceContainerHigh()
+            ),
             contrast_curve=self._on_surface_variant_contrast_curve_2025,
         )
         return extend_spec_version(super().onSurfaceVariant(), "2025", color2025)
@@ -409,9 +415,11 @@ class ColorSpecDelegateImpl2025(ColorSpecDelegateImpl2021):
             name="outline",
             palette=lambda s: s.neutral_palette,
             chroma_multiplier=self._outline_chroma_multiplier_2025,
-            background=lambda s: self.highestSurface(s)
-            if s.platform == "phone"
-            else self.surfaceContainerHigh(),
+            background=lambda s: (
+                self.highestSurface(s)
+                if s.platform == "phone"
+                else self.surfaceContainerHigh()
+            ),
             contrast_curve=self._outline_contrast_curve_2025,
         )
         return extend_spec_version(super().outline(), "2025", color2025)
@@ -438,9 +446,11 @@ class ColorSpecDelegateImpl2025(ColorSpecDelegateImpl2021):
             name="outlineVariant",
             palette=lambda s: s.neutral_palette,
             chroma_multiplier=self._outline_variant_chroma_multiplier_2025,
-            background=lambda s: self.highestSurface(s)
-            if s.platform == "phone"
-            else self.surfaceContainerHigh(),
+            background=lambda s: (
+                self.highestSurface(s)
+                if s.platform == "phone"
+                else self.surfaceContainerHigh()
+            ),
             contrast_curve=self._outline_variant_contrast_curve_2025,
         )
         return extend_spec_version(super().outlineVariant(), "2025", color2025)
@@ -528,9 +538,11 @@ class ColorSpecDelegateImpl2025(ColorSpecDelegateImpl2021):
             palette=lambda s: s.primary_palette,
             tone=self._primary_tone_2025,
             is_background=True,
-            background=lambda s: self.highestSurface(s)
-            if s.platform == "phone"
-            else self.surfaceContainerHigh(),
+            background=lambda s: (
+                self.highestSurface(s)
+                if s.platform == "phone"
+                else self.surfaceContainerHigh()
+            ),
             contrast_curve=self._primary_contrast_curve_2025,
             tone_delta_pair=self._primary_tone_delta_pair_2025,
         )
@@ -803,9 +815,11 @@ class ColorSpecDelegateImpl2025(ColorSpecDelegateImpl2021):
             palette=lambda s: s.secondary_palette,
             tone=self._secondary_tone_2025,
             is_background=True,
-            background=lambda s: self.highestSurface(s)
-            if s.platform == "phone"
-            else self.surfaceContainerHigh(),
+            background=lambda s: (
+                self.highestSurface(s)
+                if s.platform == "phone"
+                else self.surfaceContainerHigh()
+            ),
             contrast_curve=self._secondary_contrast_curve_2025,
             tone_delta_pair=self._secondary_tone_delta_pair_2025,
         )
@@ -1043,9 +1057,11 @@ class ColorSpecDelegateImpl2025(ColorSpecDelegateImpl2021):
             palette=lambda s: s.tertiary_palette,
             tone=self._tertiary_tone_2025,
             is_background=True,
-            background=lambda s: self.highestSurface(s)
-            if s.platform == "phone"
-            else self.surfaceContainerHigh(),
+            background=lambda s: (
+                self.highestSurface(s)
+                if s.platform == "phone"
+                else self.surfaceContainerHigh()
+            ),
             contrast_curve=self._tertiary_contrast_curve_2025,
             tone_delta_pair=self._tertiary_tone_delta_pair_2025,
         )
@@ -1283,9 +1299,11 @@ class ColorSpecDelegateImpl2025(ColorSpecDelegateImpl2021):
             palette=lambda s: s.error_palette,
             tone=self._error_tone_2025,
             is_background=True,
-            background=lambda s: self.highestSurface(s)
-            if s.platform == "phone"
-            else self.surfaceContainerHigh(),
+            background=lambda s: (
+                self.highestSurface(s)
+                if s.platform == "phone"
+                else self.surfaceContainerHigh()
+            ),
             contrast_curve=self._error_contrast_curve_2025,
             tone_delta_pair=self._error_tone_delta_pair_2025,
         )
@@ -1399,7 +1417,7 @@ class ColorSpecDelegateImpl2025(ColorSpecDelegateImpl2021):
     def onBackground(self) -> DynamicColor:
         color2025 = self.onSurface().clone()
         color2025.name = "onBackground"
-        color2025.tone = (
-            lambda s: 100.0 if s.platform == "watch" else self.onSurface().get_tone(s)
+        color2025.tone = lambda s: (
+            100.0 if s.platform == "watch" else self.onSurface().get_tone(s)
         )
         return extend_spec_version(super().onBackground(), "2025", color2025)

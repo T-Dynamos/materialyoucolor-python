@@ -62,9 +62,7 @@ def extend_spec_version(original, spec, extended):
         chroma_multiplier=lambda s: (
             choose(s).chroma_multiplier(s) if choose(s).chroma_multiplier else 1.0
         ),
-        background=lambda s: (
-            choose(s).background(s) if choose(s).background else None
-        ),
+        background=lambda s: choose(s).background(s) if choose(s).background else None,
         second_background=lambda s: (
             choose(s).second_background(s) if choose(s).second_background else None
         ),

@@ -110,9 +110,9 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
         return DynamicColor.from_palette(
             name="surfaceDim",
             palette=lambda s: s.neutral_palette,
-            tone=lambda s: 6
-            if s.is_dark
-            else ContrastCurve(87, 87, 80, 75).get(s.contrast_level),
+            tone=lambda s: (
+                6 if s.is_dark else ContrastCurve(87, 87, 80, 75).get(s.contrast_level)
+            ),
             is_background=True,
         )
 
@@ -120,9 +120,9 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
         return DynamicColor.from_palette(
             name="surfaceBright",
             palette=lambda s: s.neutral_palette,
-            tone=lambda s: ContrastCurve(24, 24, 29, 34).get(s.contrast_level)
-            if s.is_dark
-            else 98,
+            tone=lambda s: (
+                ContrastCurve(24, 24, 29, 34).get(s.contrast_level) if s.is_dark else 98
+            ),
             is_background=True,
         )
 
@@ -130,9 +130,9 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
         return DynamicColor.from_palette(
             name="surfaceContainerLowest",
             palette=lambda s: s.neutral_palette,
-            tone=lambda s: ContrastCurve(4, 4, 2, 0).get(s.contrast_level)
-            if s.is_dark
-            else 100,
+            tone=lambda s: (
+                ContrastCurve(4, 4, 2, 0).get(s.contrast_level) if s.is_dark else 100
+            ),
             is_background=True,
         )
 
@@ -140,9 +140,11 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
         return DynamicColor.from_palette(
             name="surfaceContainerLow",
             palette=lambda s: s.neutral_palette,
-            tone=lambda s: ContrastCurve(10, 10, 11, 12).get(s.contrast_level)
-            if s.is_dark
-            else ContrastCurve(96, 96, 96, 95).get(s.contrast_level),
+            tone=lambda s: (
+                ContrastCurve(10, 10, 11, 12).get(s.contrast_level)
+                if s.is_dark
+                else ContrastCurve(96, 96, 96, 95).get(s.contrast_level)
+            ),
             is_background=True,
         )
 
@@ -150,9 +152,11 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
         return DynamicColor.from_palette(
             name="surfaceContainer",
             palette=lambda s: s.neutral_palette,
-            tone=lambda s: ContrastCurve(12, 12, 16, 20).get(s.contrast_level)
-            if s.is_dark
-            else ContrastCurve(94, 94, 92, 90).get(s.contrast_level),
+            tone=lambda s: (
+                ContrastCurve(12, 12, 16, 20).get(s.contrast_level)
+                if s.is_dark
+                else ContrastCurve(94, 94, 92, 90).get(s.contrast_level)
+            ),
             is_background=True,
         )
 
@@ -160,9 +164,11 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
         return DynamicColor.from_palette(
             name="surfaceContainerHigh",
             palette=lambda s: s.neutral_palette,
-            tone=lambda s: ContrastCurve(17, 17, 21, 25).get(s.contrast_level)
-            if s.is_dark
-            else ContrastCurve(92, 92, 88, 85).get(s.contrast_level),
+            tone=lambda s: (
+                ContrastCurve(17, 17, 21, 25).get(s.contrast_level)
+                if s.is_dark
+                else ContrastCurve(92, 92, 88, 85).get(s.contrast_level)
+            ),
             is_background=True,
         )
 
@@ -170,9 +176,11 @@ class ColorSpecDelegateImpl2021(ColorSpecDelegate):
         return DynamicColor.from_palette(
             name="surfaceContainerHighest",
             palette=lambda s: s.neutral_palette,
-            tone=lambda s: ContrastCurve(22, 22, 26, 30).get(s.contrast_level)
-            if s.is_dark
-            else ContrastCurve(90, 90, 84, 80).get(s.contrast_level),
+            tone=lambda s: (
+                ContrastCurve(22, 22, 26, 30).get(s.contrast_level)
+                if s.is_dark
+                else ContrastCurve(90, 90, 84, 80).get(s.contrast_level)
+            ),
             is_background=True,
         )
 

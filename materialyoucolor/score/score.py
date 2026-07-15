@@ -51,7 +51,7 @@ class Score:
 
         colors_hct: List[Hct] = []
         hue_population = [0] * 360
-        population_sum = 0
+        population_sum = 1e-5
 
         for argb, population in colors_to_population.items():
             hct = Hct.from_int(argb)
