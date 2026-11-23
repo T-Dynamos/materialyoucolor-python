@@ -7,15 +7,19 @@ import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+repo_root = str(REPO_ROOT)
+while repo_root in sys.path:
+    sys.path.remove(repo_root)
+
 try:
     from materialyoucolor.scheme.scheme_cmf import SchemeCmf
-    from materialyoucolor.quantize import celebi
+    from materialyoucolor.quantize import QuantizeWsmeans
 except (ImportError, AttributeError):
     for mod in list(sys.modules.keys()):
         if mod == "materialyoucolor" or mod.startswith("materialyoucolor."):
             del sys.modules[mod]
-    if str(REPO_ROOT) not in sys.path:
-        sys.path.insert(0, str(REPO_ROOT))
+    if repo_root not in sys.path:
+        sys.path.insert(0, repo_root)
 
 import psutil
 from PIL import Image

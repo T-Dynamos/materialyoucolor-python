@@ -40,7 +40,7 @@ jobs:
           python -c "from PIL import Image; Image.new('RGB', (128, 128), (70, 120, 180)).save('test_image.jpg')" &&
           python {project}/tests/test_all.py --image test_image.jpg --quality 1 --method pillow --tonal-spot &&
           python {project}/tests/test_all.py --image test_image.jpg --quality 1 --method cpp --tonal-spot &&
-          pytest {project}/tests -k "not test_deno_typescript_parity"
+          pytest -o pythonpath="" {project}/tests -k "not test_deno_typescript_parity"
         CIBW_BEFORE_BUILD: >
           pip install setuptools wheel pybind11
 
