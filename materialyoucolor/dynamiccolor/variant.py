@@ -11,3 +11,4 @@ class Variant(Enum):
     CONTENT = 7
     RAINBOW = 8
     FRUIT_SALAD = 9
+    CMF = 10

@@ -1,3 +1,4 @@
+from .scheme_cmf import SchemeCmf
 from .scheme_content import SchemeContent
 from .scheme_expressive import SchemeExpressive
 from .scheme_fidelity import SchemeFidelity

@@ -8,9 +8,9 @@ from materialyoucolor.dynamiccolor.variant import Variant
 from materialyoucolor.hct.hct import Hct
 from materialyoucolor.palettes.tonal_palette import TonalPalette
 from materialyoucolor.temperature.temperature_cache import TemperatureCache
-from materialyoucolor.utils.math_utils import sanitize_degrees_double
+from materialyoucolor.utils.math_utils import sanitize_degrees_double, clamp_double
 
-SpecVersion = Literal["2021", "2025"]
+SpecVersion = Literal["2021", "2025", "2026"]
 Platform = Literal["phone", "watch"]
 
 
@@ -82,10 +82,10 @@ class DynamicScheme:
 
     def __init__(
         self,
-        source_color_hct: Hct,
-        variant: Variant,
-        contrast_level: float,
-        is_dark: bool,
+        source_color_hct: Hct | list[Hct] | None = None,
+        variant: Variant = Variant.TONAL_SPOT,
+        contrast_level: float = 0.0,
+        is_dark: bool = False,
         platform: Platform = "phone",
         spec_version: SpecVersion = "2021",
         primary_palette: TonalPalette = None,
@@ -94,14 +94,33 @@ class DynamicScheme:
         neutral_palette: TonalPalette = None,
         neutral_variant_palette: TonalPalette = None,
         error_palette: TonalPalette = None,
+        source_color_hcts: list[Hct] | None = None,
     ):
-        self.source_color_argb = source_color_hct.to_int()
-        self.source_color_hct = source_color_hct
+        if source_color_hcts:
+            if len(source_color_hcts) == 0:
+                raise ValueError("source_color_hcts cannot be empty")
+            self.source_color_hct = source_color_hcts[0]
+            self.source_color_hcts = list(source_color_hcts)
+        elif source_color_hct is not None:
+            if isinstance(source_color_hct, (list, tuple)):
+                if len(source_color_hct) == 0:
+                    raise ValueError("source_color_hct list cannot be empty")
+                self.source_color_hct = source_color_hct[0]
+                self.source_color_hcts = list(source_color_hct)
+            else:
+                self.source_color_hct = source_color_hct
+                self.source_color_hcts = [source_color_hct]
+        else:
+            raise ValueError("source_color_hct or source_color_hcts required")
+
+        self.source_color_argb = self.source_color_hct.to_int()
         self.variant = variant
         self.contrast_level = contrast_level
         self.is_dark = is_dark
         self.platform = platform
-        self.spec_version = self._maybe_fallback_spec_version(spec_version, variant)
+        self.spec_version = self._maybe_fallback_spec_version(
+            spec_version, variant, platform
+        )
 
         spec = get_spec(self.spec_version)
         self.primary_palette = primary_palette or spec.get_primary_palette(
@@ -156,15 +175,20 @@ class DynamicScheme:
 
     @staticmethod
     def _maybe_fallback_spec_version(
-        spec_version: SpecVersion, variant: Variant
+        spec_version: SpecVersion, variant: Variant, platform: Platform = "phone"
     ) -> SpecVersion:
-        if variant in [
-            Variant.EXPRESSIVE,
-            Variant.VIBRANT,
-            Variant.TONAL_SPOT,
-            Variant.NEUTRAL,
-        ]:
+        if variant == Variant.CMF:
             return spec_version
+        if (
+            variant in [
+                Variant.EXPRESSIVE,
+                Variant.VIBRANT,
+                Variant.TONAL_SPOT,
+                Variant.NEUTRAL,
+            ]
+            or (platform == "watch" and variant == Variant.CONTENT)
+        ):
+            return "2025" if spec_version == "2026" else spec_version
         return "2021"
 
     def __str__(self):
@@ -414,7 +438,7 @@ class DynamicSchemePalettesDelegateImpl2021(DynamicSchemePalettesDelegate):
         return None
 
 
-class DynamicSchemePalettesDelegateImpl2025(DynamicSchemePalettesDelegate):
+class DynamicSchemePalettesDelegateImpl2025(DynamicSchemePalettesDelegateImpl2021):
     def get_primary_palette(
         self,
         variant: Variant,
@@ -426,28 +450,40 @@ class DynamicSchemePalettesDelegateImpl2025(DynamicSchemePalettesDelegate):
         if variant == Variant.NEUTRAL:
             return TonalPalette.from_hue_and_chroma(
                 source_color_hct.hue,
-                12
-                if platform == "phone" and Hct.is_blue(source_color_hct.hue)
-                else (
-                    8
+                (
+                    (12 if Hct.is_blue(source_color_hct.hue) else 8)
                     if platform == "phone"
-                    else (16 if Hct.is_blue(source_color_hct.hue) else 12)
+                    else (
+                        16
+                        if DynamicSchemePalettesDelegateImpl2025._is_watch_blue_hue(
+                            source_color_hct
+                        )
+                        else 12
+                    )
                 ),
             )
-        if variant == Variant.TONAL_SPOT:
+        elif variant == Variant.TONAL_SPOT:
             return TonalPalette.from_hue_and_chroma(
                 source_color_hct.hue, 26 if platform == "phone" and is_dark else 32
             )
-        if variant == Variant.EXPRESSIVE:
+        elif variant == Variant.EXPRESSIVE:
             return TonalPalette.from_hue_and_chroma(
                 source_color_hct.hue,
-                36
-                if platform == "phone" and is_dark
-                else (48 if platform == "phone" else 40),
+                (36 if is_dark else 48) if platform == "phone" else 40,
             )
-        if variant == Variant.VIBRANT:
+        elif variant == Variant.VIBRANT:
             return TonalPalette.from_hue_and_chroma(
-                source_color_hct.hue, 74 if platform == "phone" else 56
+                source_color_hct.hue, 74 if platform == "phone" else 48
+            )
+        elif variant == Variant.CONTENT:
+            return (
+                TonalPalette.from_hue_and_chroma(
+                    source_color_hct.hue, source_color_hct.chroma
+                )
+                if platform == "watch"
+                else super().get_primary_palette(
+                    variant, source_color_hct, is_dark, platform, contrast_level
+                )
             )
         return super().get_primary_palette(
             variant, source_color_hct, is_dark, platform, contrast_level
@@ -464,35 +500,64 @@ class DynamicSchemePalettesDelegateImpl2025(DynamicSchemePalettesDelegate):
         if variant == Variant.NEUTRAL:
             return TonalPalette.from_hue_and_chroma(
                 source_color_hct.hue,
-                6
-                if platform == "phone" and Hct.is_blue(source_color_hct.hue)
-                else (
-                    4
+                (
+                    (6 if Hct.is_blue(source_color_hct.hue) else 4)
                     if platform == "phone"
-                    else (10 if Hct.is_blue(source_color_hct.hue) else 6)
+                    else (
+                        10
+                        if DynamicSchemePalettesDelegateImpl2025._is_watch_blue_hue(
+                            source_color_hct
+                        )
+                        else 6
+                    )
                 ),
             )
-        if variant == Variant.TONAL_SPOT:
+        elif variant == Variant.TONAL_SPOT:
             return TonalPalette.from_hue_and_chroma(source_color_hct.hue, 16)
-        if variant == Variant.EXPRESSIVE:
+        elif variant == Variant.EXPRESSIVE:
             return TonalPalette.from_hue_and_chroma(
-                DynamicScheme.get_rotated_hue(
-                    source_color_hct,
-                    [0, 105, 140, 204, 253, 278, 300, 333, 360],
-                    [-160, 155, -100, 96, -96, -156, -165, -160],
+                (
+                    DynamicScheme.get_rotated_hue(
+                        source_color_hct,
+                        [0, 21, 51, 121, 151, 191, 271, 321, 360],
+                        [204, 175, 155, 150, 204, 260, 204, 204, 204],
+                    )
+                    if platform == "watch"
+                    else DynamicScheme.get_rotated_hue(
+                        source_color_hct,
+                        [0, 105, 140, 204, 253, 278, 300, 333, 360],
+                        [-160, 155, -100, 96, -96, -156, -165, -160],
+                    )
                 ),
-                16
-                if platform == "phone" and is_dark
-                else (24 if platform == "phone" else 24),
+                (16 if is_dark else 24) if platform == "phone" else 24,
             )
-        if variant == Variant.VIBRANT:
+        elif variant == Variant.VIBRANT:
             return TonalPalette.from_hue_and_chroma(
-                DynamicScheme.get_rotated_hue(
-                    source_color_hct,
-                    [0, 38, 105, 140, 333, 360],
-                    [-14, 10, -14, 10, -14],
+                (
+                    DynamicScheme.get_rotated_hue(
+                        source_color_hct,
+                        [0, 41, 61, 101, 131, 181, 251, 301, 360],
+                        [-14, 0, 355, 357, 0, 3, 10, 331, 331],
+                    )
+                    if platform == "watch"
+                    else DynamicScheme.get_rotated_hue(
+                        source_color_hct,
+                        [0, 38, 105, 140, 333, 360],
+                        [-14, 10, -14, 10, -14],
+                    )
                 ),
                 56 if platform == "phone" else 36,
+            )
+        elif variant == Variant.CONTENT:
+            return (
+                TonalPalette.from_hue_and_chroma(
+                    source_color_hct.hue,
+                    clamp_double(16.0, 36.0, source_color_hct.chroma * 0.5),
+                )
+                if platform == "watch"
+                else super().get_secondary_palette(
+                    variant, source_color_hct, is_dark, platform, contrast_level
+                )
             )
         return super().get_secondary_palette(
             variant, source_color_hct, is_dark, platform, contrast_level
@@ -508,80 +573,146 @@ class DynamicSchemePalettesDelegateImpl2025(DynamicSchemePalettesDelegate):
     ) -> TonalPalette:
         if variant == Variant.NEUTRAL:
             return TonalPalette.from_hue_and_chroma(
-                DynamicScheme.get_rotated_hue(
-                    source_color_hct,
-                    [0, 38, 105, 161, 204, 278, 333, 360],
-                    [-32, 26, 10, -39, 24, -15, -32],
+                (
+                    DynamicScheme.get_rotated_hue(
+                        source_color_hct,
+                        [0, 41, 61, 101, 131, 181, 250, 270, 360],
+                        [25, 25, 26, 25, -39, 25, 28, 25, 25],
+                    )
+                    if platform == "watch"
+                    else DynamicScheme.get_rotated_hue(
+                        source_color_hct,
+                        [0, 38, 105, 161, 204, 278, 333, 360],
+                        [-32, 26, 10, -39, 24, -15, -32],
+                    )
                 ),
                 20 if platform == "phone" else 36,
             )
-        if variant == Variant.TONAL_SPOT:
+        elif variant == Variant.TONAL_SPOT:
             return TonalPalette.from_hue_and_chroma(
-                DynamicScheme.get_rotated_hue(
-                    source_color_hct,
-                    [0, 20, 71, 161, 333, 360],
-                    [-40, 48, -32, 40, -32],
+                (
+                    DynamicScheme.get_rotated_hue(
+                        source_color_hct,
+                        [0, 40, 101, 210, 301, 360],
+                        [-32, 32, -32, 32, -32, -32],
+                    )
+                    if platform == "watch"
+                    else DynamicScheme.get_rotated_hue(
+                        source_color_hct,
+                        [0, 20, 71, 161, 333, 360],
+                        [-40, 48, -32, 40, -32],
+                    )
                 ),
                 28 if platform == "phone" else 32,
             )
-        if variant == Variant.EXPRESSIVE:
+        elif variant == Variant.EXPRESSIVE:
             return TonalPalette.from_hue_and_chroma(
-                DynamicScheme.get_rotated_hue(
-                    source_color_hct,
-                    [0, 105, 140, 204, 253, 278, 300, 333, 360],
-                    [-165, 160, -105, 101, -101, -160, -170, -165],
+                (
+                    DynamicScheme.get_rotated_hue(
+                        source_color_hct,
+                        [0, 21, 51, 121, 151, 191, 271, 321, 360],
+                        [200, 200, 160, 169, 200, 220, 200, 200, 200],
+                    )
+                    if platform == "watch"
+                    else DynamicScheme.get_rotated_hue(
+                        source_color_hct,
+                        [0, 105, 140, 204, 253, 278, 300, 333, 360],
+                        [-165, 160, -105, 101, -101, -160, -170, -165],
+                    )
                 ),
                 48,
             )
-        if variant == Variant.VIBRANT:
+        elif variant == Variant.VIBRANT:
             return TonalPalette.from_hue_and_chroma(
-                DynamicScheme.get_rotated_hue(
-                    source_color_hct,
-                    [0, 38, 71, 105, 140, 161, 253, 333, 360],
-                    [-72, 35, 24, -24, 62, 50, 62, -72],
+                (
+                    DynamicScheme.get_rotated_hue(
+                        source_color_hct,
+                        [0, 41, 61, 101, 131, 181, 251, 301, 360],
+                        [-72, 55, 45, 50, 55, 50, 62, 303, 303],
+                    )
+                    if platform == "watch"
+                    else DynamicScheme.get_rotated_hue(
+                        source_color_hct,
+                        [0, 38, 71, 105, 140, 161, 253, 333, 360],
+                        [-72, 35, 24, -24, 62, 50, 62, -72],
+                    )
                 ),
-                56,
+                56 if platform == "phone" else 48,
+            )
+        elif variant == Variant.CONTENT:
+            return (
+                TonalPalette.from_hue_and_chroma(
+                    DynamicScheme.get_rotated_hue(
+                        source_color_hct,
+                        [0, 40, 101, 210, 301, 360],
+                        [-32, 32, -32, 32, -32, -32],
+                    ),
+                    source_color_hct.chroma,
+                )
+                if platform == "watch"
+                else super().get_tertiary_palette(
+                    variant, source_color_hct, is_dark, platform, contrast_level
+                )
             )
         return super().get_tertiary_palette(
             variant, source_color_hct, is_dark, platform, contrast_level
         )
 
     @staticmethod
-    def _get_expressive_neutral_hue(source_color_hct: Hct) -> float:
-        hue = DynamicScheme.get_rotated_hue(
-            source_color_hct, [0, 71, 124, 253, 278, 300, 360], [10, 0, 10, 0, 10, 0]
+    def _is_watch_blue_hue(source_color_hct: Hct) -> bool:
+        return 250 <= source_color_hct.hue <= 270
+
+    @staticmethod
+    def _get_expressive_neutral_hue(
+        source_color_hct: Hct, platform: Platform = "phone"
+    ) -> float:
+        if platform == "watch":
+            return DynamicScheme.get_rotated_hue(
+                source_color_hct,
+                [0, 21, 51, 121, 151, 191, 271, 321, 360],
+                [0, 0, 0, 0, 0, 0, 10, 0, 0],
+            )
+        return DynamicScheme.get_rotated_hue(
+            source_color_hct,
+            [0, 71, 124, 253, 278, 300, 360],
+            [10, 0, 10, 0, 10, 0],
         )
-        return hue
 
     @staticmethod
     def _get_expressive_neutral_chroma(
         source_color_hct: Hct, is_dark: bool, platform: Platform
     ) -> float:
         neutral_hue = DynamicSchemePalettesDelegateImpl2025._get_expressive_neutral_hue(
-            source_color_hct
+            source_color_hct, platform
         )
         return (
-            6
-            if platform == "phone" and is_dark and Hct.is_yellow(neutral_hue)
-            else (
-                14
-                if platform == "phone" and is_dark
-                else (18 if platform == "phone" else 12)
-            )
+            ((6 if Hct.is_yellow(neutral_hue) else 14) if is_dark else 18)
+            if platform == "phone"
+            else 12
         )
 
     @staticmethod
-    def _get_vibrant_neutral_hue(source_color_hct: Hct) -> float:
+    def _get_vibrant_neutral_hue(
+        source_color_hct: Hct, platform: Platform = "phone"
+    ) -> float:
+        if platform == "watch":
+            return DynamicScheme.get_rotated_hue(
+                source_color_hct,
+                [0, 41, 61, 101, 131, 181, 251, 301, 360],
+                [-14, 0, 355, 357, 0, 3, 10, 331, 331],
+            )
         return DynamicScheme.get_rotated_hue(
             source_color_hct, [0, 38, 105, 140, 333, 360], [-14, 10, -14, 10, -14]
         )
 
     @staticmethod
     def _get_vibrant_neutral_chroma(source_color_hct: Hct, platform: Platform) -> float:
-        neutral_hue = DynamicSchemePalettesDelegateImpl2025._get_vibrant_neutral_hue(
-            source_color_hct
+        return (
+            28
+            if platform == "phone"
+            or DynamicSchemePalettesDelegateImpl2025._is_watch_blue_hue(source_color_hct)
+            else 20
         )
-        return 28 if platform == "phone" else (28 if Hct.is_blue(neutral_hue) else 20)
 
     def get_neutral_palette(
         self,
@@ -595,27 +726,38 @@ class DynamicSchemePalettesDelegateImpl2025(DynamicSchemePalettesDelegate):
             return TonalPalette.from_hue_and_chroma(
                 source_color_hct.hue, 1.4 if platform == "phone" else 6
             )
-        if variant == Variant.TONAL_SPOT:
+        elif variant == Variant.TONAL_SPOT:
             return TonalPalette.from_hue_and_chroma(
                 source_color_hct.hue, 5 if platform == "phone" else 10
             )
-        if variant == Variant.EXPRESSIVE:
+        elif variant == Variant.EXPRESSIVE:
             return TonalPalette.from_hue_and_chroma(
                 DynamicSchemePalettesDelegateImpl2025._get_expressive_neutral_hue(
-                    source_color_hct
+                    source_color_hct, platform
                 ),
                 DynamicSchemePalettesDelegateImpl2025._get_expressive_neutral_chroma(
                     source_color_hct, is_dark, platform
                 ),
             )
-        if variant == Variant.VIBRANT:
+        elif variant == Variant.VIBRANT:
             return TonalPalette.from_hue_and_chroma(
                 DynamicSchemePalettesDelegateImpl2025._get_vibrant_neutral_hue(
-                    source_color_hct
+                    source_color_hct, platform
                 ),
                 DynamicSchemePalettesDelegateImpl2025._get_vibrant_neutral_chroma(
                     source_color_hct, platform
                 ),
+            )
+        elif variant == Variant.CONTENT:
+            return (
+                TonalPalette.from_hue_and_chroma(
+                    source_color_hct.hue,
+                    clamp_double(6.0, 20.0, source_color_hct.chroma * 0.333),
+                )
+                if platform == "watch"
+                else super().get_neutral_palette(
+                    variant, source_color_hct, is_dark, platform, contrast_level
+                )
             )
         return super().get_neutral_palette(
             variant, source_color_hct, is_dark, platform, contrast_level
@@ -629,18 +771,32 @@ class DynamicSchemePalettesDelegateImpl2025(DynamicSchemePalettesDelegate):
         platform: Platform,
         contrast_level: float,
     ) -> TonalPalette:
+        if platform == "watch":
+            if variant in [
+                Variant.NEUTRAL,
+                Variant.TONAL_SPOT,
+                Variant.EXPRESSIVE,
+                Variant.VIBRANT,
+                Variant.CONTENT,
+            ]:
+                return self.get_neutral_palette(
+                    variant, source_color_hct, is_dark, platform, contrast_level
+                )
+            return super().get_neutral_variant_palette(
+                variant, source_color_hct, is_dark, platform, contrast_level
+            )
         if variant == Variant.NEUTRAL:
             return TonalPalette.from_hue_and_chroma(
                 source_color_hct.hue, (1.4 if platform == "phone" else 6) * 2.2
             )
-        if variant == Variant.TONAL_SPOT:
+        elif variant == Variant.TONAL_SPOT:
             return TonalPalette.from_hue_and_chroma(
                 source_color_hct.hue, (5 if platform == "phone" else 10) * 1.7
             )
-        if variant == Variant.EXPRESSIVE:
+        elif variant == Variant.EXPRESSIVE:
             expressive_neutral_hue = (
                 DynamicSchemePalettesDelegateImpl2025._get_expressive_neutral_hue(
-                    source_color_hct
+                    source_color_hct, platform
                 )
             )
             expressive_neutral_chroma = (
@@ -653,14 +809,14 @@ class DynamicSchemePalettesDelegateImpl2025(DynamicSchemePalettesDelegate):
                 expressive_neutral_chroma
                 * (
                     1.6
-                    if expressive_neutral_hue >= 105 and expressive_neutral_hue < 125
+                    if 105 <= expressive_neutral_hue < 125
                     else 2.3
                 ),
             )
-        if variant == Variant.VIBRANT:
+        elif variant == Variant.VIBRANT:
             vibrant_neutral_hue = (
                 DynamicSchemePalettesDelegateImpl2025._get_vibrant_neutral_hue(
-                    source_color_hct
+                    source_color_hct, platform
                 )
             )
             vibrant_neutral_chroma = (
@@ -692,17 +848,27 @@ class DynamicSchemePalettesDelegateImpl2025(DynamicSchemePalettesDelegate):
             return TonalPalette.from_hue_and_chroma(
                 error_hue, 50 if platform == "phone" else 40
             )
-        if variant == Variant.TONAL_SPOT:
+        elif variant == Variant.TONAL_SPOT:
             return TonalPalette.from_hue_and_chroma(
                 error_hue, 60 if platform == "phone" else 48
             )
-        if variant == Variant.EXPRESSIVE:
+        elif variant == Variant.EXPRESSIVE:
             return TonalPalette.from_hue_and_chroma(
                 error_hue, 64 if platform == "phone" else 48
             )
-        if variant == Variant.VIBRANT:
+        elif variant == Variant.VIBRANT:
             return TonalPalette.from_hue_and_chroma(
-                error_hue, 80 if platform == "phone" else 60
+                error_hue, 80 if platform == "phone" else 48
+            )
+        elif variant == Variant.CONTENT:
+            return (
+                TonalPalette.from_hue_and_chroma(
+                    error_hue, max(40.0, source_color_hct.chroma)
+                )
+                if platform == "watch"
+                else super().get_error_palette(
+                    variant, source_color_hct, is_dark, platform, contrast_level
+                )
             )
         return super().get_error_palette(
             variant, source_color_hct, is_dark, platform, contrast_level
@@ -714,4 +880,4 @@ _spec2025 = DynamicSchemePalettesDelegateImpl2025()
 
 
 def get_spec(spec_version: SpecVersion) -> DynamicSchemePalettesDelegate:
-    return _spec2025 if spec_version == "2025" else _spec2021
+    return _spec2021 if spec_version == "2021" else _spec2025

@@ -1,1 +1,1 @@
-from .celebi import QuantizeCelebi, ImageQuantizeCelebi
+from .celebi import QuantizeCelebi, ImageQuantizeCelebi, QuantizeWsmeans

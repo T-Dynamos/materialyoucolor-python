@@ -5,7 +5,7 @@ from materialyoucolor.contrast.contrast import Contrast
 from materialyoucolor.hct.hct import Hct
 from materialyoucolor.utils.math_utils import clamp_double
 
-SpecVersion = Literal["2021", "2025"]
+SpecVersion = Literal["2021", "2025", "2026"]
 
 COLOR_NAMES = [
     # Background & surface base
@@ -102,10 +102,11 @@ class ColorSpecDelegate(ABC):
 
 _spec_2021 = None
 _spec_2025 = None
+_spec_2026 = None
 
 
 def get_spec(spec_version: SpecVersion) -> ColorSpecDelegate:
-    global _spec_2021, _spec_2025
+    global _spec_2021, _spec_2025, _spec_2026
     if spec_version == "2021":
         if _spec_2021 is None:
             from materialyoucolor.dynamiccolor.color_spec_2021 import (
@@ -122,6 +123,14 @@ def get_spec(spec_version: SpecVersion) -> ColorSpecDelegate:
 
             _spec_2025 = ColorSpecDelegateImpl2025()
         return _spec_2025
+    elif spec_version == "2026":
+        if _spec_2026 is None:
+            from materialyoucolor.dynamiccolor.color_spec_2026 import (
+                ColorSpecDelegateImpl2026,
+            )
+
+            _spec_2026 = ColorSpecDelegateImpl2026()
+        return _spec_2026
     else:
         raise ValueError(f"Unsupported spec version: {spec_version}")
 
@@ -350,7 +359,11 @@ class ColorCalculationDelegateImpl2025(ColorCalculationDelegate):
                         else DynamicColor.foreground_tone(bg_tone, self_contrast)
                     )
 
-            if color.is_background and not self._is_fixed_dim_name(color.name):
+            if (
+                scheme.platform == "phone"
+                and color.is_background
+                and not self._is_fixed_dim_name(color.name)
+            ):
                 if self_tone >= 57:
                     self_tone = clamp_double(65, 100, self_tone)
                 else:
@@ -376,11 +389,24 @@ class ColorCalculationDelegateImpl2025(ColorCalculationDelegate):
                 else DynamicColor.foreground_tone(bg_tone, desired_ratio)
             )
 
-            if color.is_background and not self._is_fixed_dim_name(color.name):
+            if (
+                scheme.platform == "phone"
+                and color.is_background
+                and not self._is_fixed_dim_name(color.name)
+            ):
                 if answer >= 57:
                     answer = clamp_double(65, 100, answer)
                 else:
                     answer = clamp_double(0, 49, answer)
+            elif (
+                scheme.platform == "watch"
+                and color.is_background
+                and 50 <= answer < 60
+            ):
+                if Contrast.ratio_of_tones(49, bg_tone) >= desired_ratio:
+                    answer = 49
+                else:
+                    answer = 60
 
             if not color.second_background or not color.second_background(scheme):
                 return answer
@@ -424,4 +450,4 @@ _spec2025_calc = ColorCalculationDelegateImpl2025()
 def get_color_calculation_delegate(
     spec_version: "SpecVersion",
 ) -> ColorCalculationDelegate:
-    return _spec2025_calc if spec_version == "2025" else _spec2021_calc
+    return _spec2021_calc if spec_version == "2021" else _spec2025_calc

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from materialyoucolor.hct.hct import Hct
 from materialyoucolor.utils.math_utils import difference_degrees, sanitize_degrees_int
@@ -40,14 +40,44 @@ class Score:
 
     @staticmethod
     def score(
-        colors_to_population: Dict[int, int], options: Optional[ScoreOptions] = None
+        colors_to_population: Dict[int, int],
+        options: Optional[Union[ScoreOptions, Dict[str, Any]]] = None,
+        *,
+        desired: Optional[int] = None,
+        fallback_color_argb: Optional[int] = None,
+        filter: Optional[bool] = None,
     ) -> List[int]:
         if options is None:
-            options = SCORE_OPTION_DEFAULTS
+            opt = SCORE_OPTION_DEFAULTS
+            opt_desired = opt.desired
+            opt_fallback = opt.fallback_color_argb
+            opt_filter = opt.filter
+        elif isinstance(options, dict):
+            opt_desired = options.get("desired", SCORE_OPTION_DEFAULTS.desired)
+            opt_fallback = options.get(
+                "fallback_color_argb",
+                options.get("fallbackColorARGB", SCORE_OPTION_DEFAULTS.fallback_color_argb),
+            )
+            opt_filter = options.get("filter", SCORE_OPTION_DEFAULTS.filter)
+        else:
+            opt_desired = getattr(options, "desired", SCORE_OPTION_DEFAULTS.desired)
+            opt_fallback = getattr(
+                options,
+                "fallback_color_argb",
+                getattr(options, "fallbackColorARGB", SCORE_OPTION_DEFAULTS.fallback_color_argb),
+            )
+            opt_filter = getattr(options, "filter", SCORE_OPTION_DEFAULTS.filter)
 
-        desired = options.desired
-        fallback_color_argb = options.fallback_color_argb
-        filter_enabled = options.filter
+        if desired is not None:
+            opt_desired = desired
+        if fallback_color_argb is not None:
+            opt_fallback = fallback_color_argb
+        if filter is not None:
+            opt_filter = filter
+
+        desired = opt_desired
+        fallback_color_argb = opt_fallback
+        filter_enabled = opt_filter
 
         colors_hct: List[Hct] = []
         hue_population = [0] * 360

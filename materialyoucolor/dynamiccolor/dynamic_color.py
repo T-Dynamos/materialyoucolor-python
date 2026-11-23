@@ -47,10 +47,12 @@ def validate_extended_color(
 
 
 def extend_spec_version(original, spec, extended):
+    if original is None:
+        return extended
     validate_extended_color(original, spec, extended)
 
     def choose(s, _ext=extended, _orig=original, _spec=spec):
-        return _ext if s.spec_version == _spec else _orig
+        return _ext if str(s.spec_version) >= str(_spec) else _orig
 
     return DynamicColor(
         name=original.name,
@@ -128,6 +130,8 @@ class DynamicColor(FromPaletteOptions):
 
     def get_argb(self, scheme: DynamicScheme) -> int:
         return self.get_hct(scheme).to_int()
+
+    get_int = get_argb
 
     def get_hex(self, scheme: DynamicScheme) -> str:
         return hex_from_argb(self.get_hct(scheme).to_int())

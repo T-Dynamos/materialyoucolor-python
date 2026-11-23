@@ -33,9 +33,12 @@
 
 namespace python = pybind11;
 
-// std::map<Argb, uint32_t>
+// Quantize from vector of RGB/RGBA vectors (backward compatible)
 std::map<uint32_t, uint32_t> QuantizeCelebi(const std::vector<std::vector<int>>& pixels,
-                               int max_colors) {
+                                           int max_colors) {
+  if (max_colors <= 0 || pixels.empty()) {
+    return {};
+  }
   if (max_colors > 256) {
     max_colors = 256;
   }
@@ -44,10 +47,15 @@ std::map<uint32_t, uint32_t> QuantizeCelebi(const std::vector<std::vector<int>>&
   std::vector<material_color_utilities::Argb> opaque_pixels;
   opaque_pixels.reserve(pixel_count);
   for (int i = 0; i < pixel_count; i++) {
-    uint32_t pixel = (pixels[i][0] << 16) | 
+    uint32_t pixel = (0xff000000) |
+                     (pixels[i][0] << 16) | 
                      (pixels[i][1] << 8) | 
                      (pixels[i][2]);
-    //if (pixels[i].size() > 3 && pixels[i][3] == 255) 
+    if (pixels[i].size() > 3) {
+      if (!material_color_utilities::IsOpaque((pixels[i][3] << 24) | (pixel & 0x00ffffff))) {
+        continue;
+      }
+    }
     opaque_pixels.push_back(pixel);
   }
 
@@ -60,8 +68,35 @@ std::map<uint32_t, uint32_t> QuantizeCelebi(const std::vector<std::vector<int>>&
   return result.color_to_count;
 }
 
+// Overload: Quantize from vector of ARGB uint32
+std::map<uint32_t, uint32_t> QuantizeCelebiArgb(const std::vector<uint32_t>& pixels,
+                                               int max_colors) {
+  if (max_colors <= 0 || pixels.empty()) {
+    return {};
+  }
+  if (max_colors > 256) {
+    max_colors = 256;
+  }
 
-std::map<uint32_t, uint32_t>  ImageQuantizeCelebi(const char* image_path, const int quality,  int max_colors) {
+  std::vector<material_color_utilities::Argb> opaque_pixels;
+  opaque_pixels.reserve(pixels.size());
+  for (uint32_t pixel : pixels) {
+    if (!material_color_utilities::IsOpaque(pixel)) {
+      continue;
+    }
+    opaque_pixels.push_back(pixel);
+  }
+
+  std::vector<material_color_utilities::Argb> wu_result = material_color_utilities::QuantizeWu(
+      opaque_pixels, max_colors);
+
+  material_color_utilities::QuantizerResult result =
+      material_color_utilities::QuantizeWsmeans(opaque_pixels, wu_result, max_colors);
+
+  return result.color_to_count;
+}
+
+std::map<uint32_t, uint32_t> ImageQuantizeCelebi(const char* image_path, const int quality, int max_colors) {
     int width, height, channels;
     std::vector<std::vector<int>> pixel_array = {};
     unsigned char* pixel_result = stbi_load(image_path, &width, &height, &channels, 4);
@@ -86,9 +121,22 @@ std::map<uint32_t, uint32_t>  ImageQuantizeCelebi(const char* image_path, const 
     return QuantizeCelebi(pixel_array, max_colors);
 }
 
+std::map<uint32_t, uint32_t> QuantizeWsmeans(const std::vector<uint32_t>& input_pixels,
+                                             const std::vector<uint32_t>& starting_clusters,
+                                             int max_colors) {
+  if (max_colors <= 0 || input_pixels.empty()) {
+    return {};
+  }
+  auto res = material_color_utilities::QuantizeWsmeans(
+      input_pixels, starting_clusters, static_cast<uint16_t>(max_colors));
+  return res.color_to_count;
+}
 
 PYBIND11_MODULE(celebi, m) {
     m.doc() = "Functions from cpp backend";
-    m.def("QuantizeCelebi", &QuantizeCelebi, "Get dominant colors");
+    m.def("QuantizeCelebi", pybind11::overload_cast<const std::vector<std::vector<int>>&, int>(&QuantizeCelebi), "Get dominant colors from RGB tuples");
+    m.def("QuantizeCelebi", pybind11::overload_cast<const std::vector<uint32_t>&, int>(&QuantizeCelebiArgb), "Get dominant colors from ARGB ints");
+    m.def("QuantizeWsmeans", &QuantizeWsmeans, "Wsmeans quantizer",
+          pybind11::arg("input_pixels"), pybind11::arg("starting_clusters"), pybind11::arg("max_colors"));
     m.def("ImageQuantizeCelebi", &ImageQuantizeCelebi, "Get pixel array");
 }

@@ -39,6 +39,8 @@ class Hct:
     def from_int(argb: int):
         return Hct(argb)
 
+    from_ = from_hct
+
     def to_int(self) -> int:
         return self.argb
 
