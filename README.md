@@ -13,8 +13,10 @@ It is built in reference with offical [typescript implementation](https://github
 Run file `tests/test_all.py` as:
 
 ```console
-usage: test_all.py [-h] [--tonal-spot] [--expressive] [--fidelity] [--fruit-salad] [--monochrome] [--neutral] [--rainbow] [--vibrant]
-                   [--content] [--all] [--image IMAGE] [--quality QUALITY] [--method {pillow,cpp}]
+usage: test_all.py [-h] [--tonal-spot] [--expressive] [--fidelity]
+                   [--fruit-salad] [--monochrome] [--neutral] [--rainbow]
+                   [--vibrant] [--content] [--cmf] [--all] [--image IMAGE]
+                   [--quality QUALITY] [--method {pillow,cpp}]
 
 Material You Color Scheme Test
 
@@ -29,6 +31,7 @@ options:
   --rainbow             Print the rainbow dynamic scheme
   --vibrant             Print the vibrant dynamic scheme
   --content             Print the content dynamic scheme
+  --cmf                 Print the cmf dynamic scheme
   --all                 Print all dynamic schemes (default)
   --image IMAGE         Path to an image file for color extraction
   --quality QUALITY     Quality for image quantization (default: 5)
@@ -139,9 +142,9 @@ from materialyoucolor.hct import Hct
 from materialyoucolor.dynamiccolor.color_spec import COLOR_NAMES
 from materialyoucolor.dynamiccolor.material_dynamic_colors import MaterialDynamicColors
 
-# There are 9 different variants of scheme.
+# There are 10 different variants of scheme.
 from materialyoucolor.scheme.scheme_tonal_spot import SchemeTonalSpot
-# Others you can import: SchemeExpressive, SchemeFruitSalad, SchemeMonochrome, SchemeRainbow, SchemeVibrant, SchemeNeutral, SchemeFidelity and SchemeContent
+# Others you can import: SchemeExpressive, SchemeFruitSalad, SchemeMonochrome, SchemeRainbow, SchemeVibrant, SchemeNeutral, SchemeFidelity, SchemeContent, and SchemeCmf
 
 # SchemeTonalSpot is android default
 scheme = SchemeTonalSpot( # choose any scheme here
@@ -172,6 +175,38 @@ for color in COLOR_NAMES:
 # onSurfaceVariant [196, 198, 208, 255] #C4C6D0FF
 # outline [142, 144, 154, 255] #8E909AFF
 ...
+```
+
+- Generate dynamic colors with CMF Scheme (Spec Version 2026)
+
+`SchemeCmf` is introduced in Material Color Utilities spec version 2026 for Color, Material, and Finish (CMF) design workflows. It supports single or multiple source colors, dynamic error hue adjustment avoiding color clash, and light-mode high saturation primary tones.
+
+```python
+from materialyoucolor.hct import Hct
+from materialyoucolor.scheme.scheme_cmf import SchemeCmf
+from materialyoucolor.dynamiccolor.material_dynamic_colors import MaterialDynamicColors
+from materialyoucolor.dynamiccolor.color_spec import COLOR_NAMES
+
+# Single source color or multiple source colors:
+source_color = Hct.from_int(0xFF4181EE)
+# Or multi-source: [Hct.from_int(0xFF4181EE), Hct.from_int(0xFFFF5449)]
+
+scheme = SchemeCmf(
+    source_color,
+    is_dark=False,
+    contrast_level=0.0,
+    spec_version="2026",
+)
+
+mdc = MaterialDynamicColors(spec="2026")
+
+for color in COLOR_NAMES:
+    _color = getattr(mdc, color)
+    print(color, _color.get_rgba(scheme), _color.get_hex(scheme))
+
+# Dynamic elevation surface resolution
+highest_surface_color = mdc.highest_surface(scheme)
+print("highestSurface:", highest_surface_color.get_hex(scheme))
 ```
 
 - Generate and score colors from image
