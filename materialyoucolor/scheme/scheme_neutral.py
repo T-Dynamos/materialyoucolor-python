@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from materialyoucolor.dynamiccolor.dynamic_scheme import (
     DynamicScheme,
     Platform,
