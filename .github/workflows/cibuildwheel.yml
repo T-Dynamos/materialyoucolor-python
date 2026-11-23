@@ -4,6 +4,9 @@ on:
   pull_request:
   push:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
@@ -13,12 +16,12 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
 
     - name: Install Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.x'
 
@@ -41,7 +44,7 @@ jobs:
         CIBW_BEFORE_BUILD: >
           pip install setuptools wheel pybind11
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       with:
         name: cibuildwheel-wheels-${{ matrix.os }}
         path: wheelhouse/*.whl
@@ -50,12 +53,12 @@ jobs:
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
 
     - name: Install Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.x'
 
@@ -64,7 +67,7 @@ jobs:
         python -m pip install --upgrade build
         python -m build --sdist
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       with:
         name: cibuildwheel-sdist
         path: dist/*.tar.gz
@@ -78,10 +81,10 @@ jobs:
       id-token: write
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Download all wheels and sdist
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
       with:
         pattern: cibuildwheel-*
         merge-multiple: true

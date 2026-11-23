@@ -6,6 +6,9 @@ on:
     branches:
       - main
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   test:
     name: Test on Python ${{ matrix.python-version }}
@@ -13,15 +16,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -31,7 +34,7 @@ jobs:
         deno-version: v2.x
 
     - name: Checkout upstream Material Color Utilities for TypeScript parity
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: material-foundation/material-color-utilities
         path: material-color-utilities
